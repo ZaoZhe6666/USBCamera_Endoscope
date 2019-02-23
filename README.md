@@ -7,3 +7,9 @@ Provide services for endoscope related work（select/cut/take photo）
 
 ###Version 0.7
 拟实现拍照操作，还未完成
+
+###Version 1.0
+拍照功能实现
+可点击切换按钮切换设备摄像头
+可点击拍照/重拍按钮拍摄照片
+可点击保存按钮，将照片存储至本地storge/SDcard/Endoscope文件夹下

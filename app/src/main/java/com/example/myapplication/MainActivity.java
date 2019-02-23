@@ -5,12 +5,17 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 
 @SuppressLint("NewApi")
@@ -19,6 +24,8 @@ public class MainActivity extends Activity{
     private static String TestLog = "TestLog";
 
     private boolean hasLogin = false;
+
+    private static File photo;
 
     private static int TAKECAMERA = 100;
     private static int LOGININTENT = 200;
@@ -167,7 +174,37 @@ public class MainActivity extends Activity{
 
     protected void onActivityResult(int requestCode, int result, Intent data) {
         Log.d(TestLog, "requeseCode = " + requestCode);
+        if(requestCode == TAKECAMERA){
+            if(photo == null) {
+                Log.d(TestLog, "Interrupt Cancel in Taking Photo");
+                return;
+            }
 
+            // 插入系统图库
+            Log.d(TestLog, "deal photo:" + photo.getAbsolutePath());
+            try {
+                MediaStore.Images.Media.insertImage(null, photo.getAbsolutePath(), photo.getName(), null);
+            } catch (FileNotFoundException e) {}
+            Log.d(TestLog, "break 0");
+            Uri uri = Uri.fromFile(photo);
+            Log.d(TestLog, "break 1");
+            Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            Log.d(TestLog, "break 2");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Log.d(TestLog, "break 3");
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            Log.d(TestLog, "break 4");
+            intent.setData(uri);
+            Log.d(TestLog, "break 5");
+
+            setPhoto(null);
+            Log.d(TestLog, "deal ok");
+            sendBroadcast(intent);
+        }
+    }
+
+    public static void setPhoto(File file){
+        photo = file;
     }
 
 }

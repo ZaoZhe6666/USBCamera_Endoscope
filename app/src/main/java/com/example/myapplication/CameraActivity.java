@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.input.InputManager;
@@ -24,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import android.hardware.Camera.PictureCallback;
 
@@ -33,6 +35,7 @@ public class CameraActivity extends Activity{
     private CameraView cameraView;
     private int currentCameraType = 0;//当前打开的摄像头标记
     private String TestLog = "TestLog";
+    private boolean Retake = false;
 
     private byte[] tmpPic;
 
@@ -58,7 +61,16 @@ public class CameraActivity extends Activity{
             @Override
             public void onClick(View v) {
                 try {
-                    changeCamera();
+                    if(Retake){
+                        Retake = false;
+                        takeButton.setText("拍照");
+                        switchButton.setText("切换");
+                        initCamera();
+                        myCamera.startPreview();
+                    }
+                    else{
+                        changeCamera();
+                    }
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -72,8 +84,20 @@ public class CameraActivity extends Activity{
             @Override
             public void onClick(View v) {
                 try {
-                    changeCamera();
-                } catch (IOException e) {
+                    if(!Retake) { // 拍照键
+                        if(myCamera != null) {
+                            myCamera.takePicture(null, null, myJpegCallback);
+                            takeButton.setText("保存");
+                            switchButton.setText("重拍");
+                            Retake = true;
+                        }
+                    }
+                    else { // 保存键
+                        Retake = false;
+                        saveJpeg();
+                        finish();
+                    }
+                } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -120,12 +144,60 @@ public class CameraActivity extends Activity{
         Log.d(TestLog, "open success");
 
         if(myCamera != null) {
+            initCamera();
             myCamera.setPreviewDisplay(cameraView.getHolder());
             myCamera.startPreview();
             Log.d(TestLog, "start preview success");
         }
     }
 
+    public void initCamera() {
+        Log.d(TestLog, "init Camera Para");
+        if (null != myCamera) {
+            // 默认后置摄像头 参数设置
+            Camera.Parameters parameters = myCamera.getParameters();
+
+            parameters.setPictureFormat(PixelFormat.JPEG);
+
+            List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
+
+            Camera.Size optionSize = getPreviewSize(sizeList, cameraView.getHeight(), cameraView.getWidth());
+//			parameters.setPictureSize(480, 640);
+            parameters.setPreviewSize(optionSize.width, optionSize.height);
+
+            myCamera.setDisplayOrientation(90);
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            myCamera.setParameters(parameters);
+            Log.d(TestLog, "param set ok");
+        }
+    }
+
+    // 相机尺寸最适匹配
+    private Camera.Size getPreviewSize(List<Camera.Size> sizes, int width, int height){
+        final double TOLERANCE = 0.1;
+        double targetRatio = (double) width / height;
+        Camera.Size res = null;
+        double minDiff = Double.MAX_VALUE;
+
+        for(Camera.Size size : sizes) {
+            double ratio = (double) size.width / size.height;
+            if(Math.abs(ratio - targetRatio) > TOLERANCE) continue;
+            if(Math.abs(ratio - targetRatio) < minDiff) {
+                minDiff = Math.abs(ratio - targetRatio);
+                res = size;
+            }
+        }
+
+        if(res == null) {
+            for(Camera.Size size : sizes) {
+                if(Math.abs(size.height - height) < minDiff) {
+                    res = size;
+                    minDiff = Math.abs(size.height - height);
+                }
+            }
+        }
+        return res;
+    }
 
     // 监控触发按键
     @Override
@@ -136,7 +208,6 @@ public class CameraActivity extends Activity{
     }
 
     PictureCallback myJpegCallback = new PictureCallback() {
-
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             Log.d(TestLog, "Temperary Save the Pic byte[]");
@@ -151,12 +222,14 @@ public class CameraActivity extends Activity{
             Log.d(TestLog, "Save in ./Endoscope");
             // 定位确定本地文件夹
             File dir = new File(Environment.getExternalStorageDirectory(), "Endoscope");
+            Log.d(TestLog, "dir is:" + dir.getAbsolutePath());
             if(dir.exists() && dir.isFile()) {
                 dir.delete();
             }
             if(!dir.exists()) {
                 dir.mkdir();
             }
+            Log.d(TestLog, "" + dir.exists());
 
             // 采用时间戳作为文件名
             Date date = new Date(System.currentTimeMillis());
@@ -178,10 +251,12 @@ public class CameraActivity extends Activity{
             bitmap.recycle();
             Log.d(TestLog, "Route Bitmap is set :" + bitmapRoute.getWidth() + ":" + bitmapRoute.getHeight());
 
+            bitmapRoute.compress(Bitmap.CompressFormat.JPEG, 100, buffStream);
+            buffStream.flush();
             buffStream.close();
 
             // 远程刷新
-    //        MainActivity.setPhoto(file);
+            MainActivity.setPhoto(file);
             Log.d(TestLog, "Saved Success");
         } catch (Exception e) {
             Log.d(TestLog, "catch in saveJpeg:" + e.getMessage());

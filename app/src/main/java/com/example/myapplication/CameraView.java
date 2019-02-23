@@ -60,4 +60,5 @@ public class CameraView extends SurfaceView implements Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         // TODO Auto-generated method stub
     }
+
 }
