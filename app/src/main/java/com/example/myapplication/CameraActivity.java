@@ -154,20 +154,23 @@ public class CameraActivity extends Activity{
     public void initCamera() {
         Log.d(TestLog, "init Camera Para");
         if (null != myCamera) {
-            // 默认后置摄像头 参数设置
-            Camera.Parameters parameters = myCamera.getParameters();
+            try {
+                // 默认后置摄像头 参数设置
+                Camera.Parameters parameters = myCamera.getParameters();
 
-            parameters.setPictureFormat(PixelFormat.JPEG);
+                parameters.setPictureFormat(PixelFormat.JPEG);
 
-            List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
+                List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
 
-            Camera.Size optionSize = getPreviewSize(sizeList, cameraView.getHeight(), cameraView.getWidth());
-//			parameters.setPictureSize(480, 640);
-            parameters.setPreviewSize(optionSize.width, optionSize.height);
+                Camera.Size optionSize = getPreviewSize(sizeList, cameraView.getHeight(), cameraView.getWidth());
+                parameters.setPreviewSize(optionSize.width, optionSize.height);
 
-            myCamera.setDisplayOrientation(90);
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-            myCamera.setParameters(parameters);
+//            myCamera.setDisplayOrientation(90);
+//            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                myCamera.setParameters(parameters);
+            }catch(Exception e){
+                Log.d(TestLog, "Error:" + e.getMessage());
+            }
             Log.d(TestLog, "param set ok");
         }
     }

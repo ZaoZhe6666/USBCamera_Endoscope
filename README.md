@@ -13,3 +13,8 @@ Provide services for endoscope related work（select/cut/take photo）
 可点击切换按钮切换设备摄像头
 可点击拍照/重拍按钮拍摄照片
 可点击保存按钮，将照片存储至本地storge/SDcard/Endoscope文件夹下
+
+###Version 2.0
+登录注册功能实现
+附带了简单的Server.py配合测试
+可进行用户 - 服务器的交互与通信
