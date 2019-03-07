@@ -1,0 +1,34 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+
+    <dimen name="font_h1">20sp</dimen>
+    <dimen name="font_h2">18sp</dimen>
+    <dimen name="font_h25">16sp</dimen>
+    <dimen name="font_h3">15sp</dimen>
+    <dimen name="font_h4">14sp</dimen>
+    <dimen name="font_h5">12sp</dimen>
+
+    <dimen name="font_icon_back_h1">40sp</dimen>
+    <dimen name="font_icon_back_h2">35sp</dimen>
+    <dimen name="font_icon_back_h3">30sp</dimen>
+    <dimen name="font_icon_back_h4">25sp</dimen>
+    <dimen name="font_icon_back_h5">20sp</dimen>
+
+    <dimen name="margin_content_left_right">10dp</dimen>
+    <dimen name="margin_content_top">10dp</dimen>
+
+    <dimen name="magin_between_chat">5dp</dimen>
+
+    <dimen name="bottom_tab_text">12sp</dimen>
+    <dimen name="bottom_tab_text_zhenduan">13sp</dimen>
+
+    <dimen name="bottom_tab_image">30dp</dimen>
+    <dimen name="bottom_tab_image_zhenduan">40dp</dimen>
+    <dimen name="bottom_tab_image_zhenduan_circle">65dp</dimen>
+
+    <!-- doublewjx edit: 20170516 -->
+    <dimen name="chat_contact_list_item_height">35dp</dimen>
+    <dimen name="chat_contact_list_headpicture_other_height">25dp</dimen>
+    <dimen name="chat_contact_list_headpicture_height">30dp</dimen>
+
+</resources>

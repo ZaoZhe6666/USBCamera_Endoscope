@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/backgroudPrimary"
+    tools:context="com.example.myapplication.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/l_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:background="?attr/colorPrimary"
+        >
+        <com.vrphogame.thyroid.widget.ToolbarViewCommon
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            custom:myTitleText_common="Medical history"
+            custom:myBackCode_common="@string/fa_angle_left"
+            custom:myCompleteText_common=""
+            >
+        </com.vrphogame.thyroid.widget.ToolbarViewCommon>
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/sv_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/l_title"
+        >
+        <RelativeLayout
+            android:id="@+id/rv_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            >
+
+            <EditText
+                android:id="@+id/et_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="10"
+                android:inputType="textMultiLine"
+                android:hint="Description... (400 characters maximum)"
+                android:layout_marginBottom="10dp"
+                android:layout_alignParentTop="true"
+                android:background="@drawable/edittext_yuanjiaojuxing"
+                android:gravity="top"
+                android:textSize="@dimen/font_h4"
+                />
+            
+            <Button
+                android:id="@+id/b_submit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_selector"
+                android:text="Confirm"
+                android:textColor="@color/colorWhite"
+                android:layout_below="@+id/et_content"
+                android:textSize="@dimen/font_h3"
+                />
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</RelativeLayout>

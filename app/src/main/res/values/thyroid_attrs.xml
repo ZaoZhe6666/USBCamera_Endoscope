@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ToolbarViewSimple">
+        <attr name="myTitleText" format="string|reference" />
+        <attr name="myBackCode" format="string|reference" />
+    </declare-styleable>
+
+    <declare-styleable name="ToolbarViewCommon">
+        <attr name="myTitleText_common" format="string|reference" />
+        <attr name="myBackCode_common" format="string|reference" />
+        <attr name="myCompleteText_common" format="string|reference" />
+        <attr name="myCompleteImage_commom" format="reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="imageText">
+        <attr name="myImage_myImageText" format="string|reference" />
+        <attr name="myText_myImageText" format="string|reference" />
+    </declare-styleable>
+
+    <declare-styleable name="RoundProgressBar">
+        <attr name="roundColor" format="color|reference"/>
+        <attr name="roundProgressColor" format="color|reference"/>
+        <attr name="roundWidth" format="dimension|string"></attr>
+        <attr name="max" format="integer|reference"></attr>
+
+        <!-- 空心还是实心 -->
+        <attr name="style">
+            <enum name="STROKE" value="0"></enum>
+            <enum name="FILL" value="1"></enum>
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="TagCloudLayout">
+        <attr name="lineSpacing" format="dimension" />
+        <attr name="tagSpacing" format="dimension" />
+        <!-- 是否是固定布局 -->
+        <attr name="isFixed" format="boolean" />
+        <attr name="columnSize" format="integer" />
+    </declare-styleable>
+</resources>

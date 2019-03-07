@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:id="@+id/l_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:background="?attr/colorPrimary"
+        >
+        <com.vrphogame.thyroid.widget.ToolbarViewCommon
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            custom:myTitleText_common="Medical circle"
+            custom:myBackCode_common=""
+            custom:myCompleteImage_commom="@drawable/yiquan_edit"
+            >
+        </com.vrphogame.thyroid.widget.ToolbarViewCommon>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/l_title">
+        <!--<ListView
+            android:id="@+id/lv_circle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+        </ListView>-->
+        <com.handmark.pulltorefresh.library.PullToRefreshListView
+            android:id="@+id/lv_circle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+        </com.handmark.pulltorefresh.library.PullToRefreshListView>
+
+    </RelativeLayout>
+
+</RelativeLayout>

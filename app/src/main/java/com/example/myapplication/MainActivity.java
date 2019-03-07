@@ -3,12 +3,19 @@ package com.example.myapplication;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -17,18 +24,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 
 @SuppressLint("NewApi")
 public class MainActivity extends Activity{
-    public static String LocalHost = "10.135.20.165";
+    public static String LocalHost = "192.168.1.106";
     private static String TestLog = "TestLog";
+    private static String YAYA_PATH = "yaya/DCIM/SOAY";
+    private static String BACK_PATH = "yaya/DCIM/BACK";
 
     public static int port = 5000;
 
@@ -40,19 +56,23 @@ public class MainActivity extends Activity{
     private static int LOGININTENT = 200;
     private static int REGISINTENT = 300;
     private static int WATCHINTENT = 400;
+    private static int SENDPICINTENT = 500;
 
     private static int NOTLOGIN = 401;
 
+    private ImageView ivImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.tt_activity_main);
 
         hasLogin = false;
+        ivImage = (ImageView) findViewById(R.id.ivImage);
+        ivImage.setVisibility(View.INVISIBLE);
 
         // 主界面登录按钮
-        Button loginButton = (Button) findViewById(R.id.login_button);
+        Button loginButton = (Button) findViewById(R.id.tabbutton_login);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,10 +81,11 @@ public class MainActivity extends Activity{
                 // 登录弹窗
                 AlertDialog.Builder login_builder = new AlertDialog.Builder(MainActivity.this);
                 LayoutInflater factory = LayoutInflater.from(MainActivity.this);
-                final View loginView = factory.inflate(R.layout.login_table, null);
 
-                final EditText inputName = (EditText) loginView.findViewById(R.id.login_username);
-                final EditText inputPsw = (EditText) loginView.findViewById(R.id.login_psw);
+                final View loginView = factory.inflate(R.layout.activity_login, null);
+                final EditText inputName = (EditText) loginView.findViewById(R.id.editText_login_username);
+                final EditText inputPsw = (EditText) loginView.findViewById(R.id.editText_login_password);
+                final Button sureButton = (Button) loginView.findViewById(R.id.btn_login);
 
                 Log.d(TestLog, "init login var");
 
@@ -77,35 +98,34 @@ public class MainActivity extends Activity{
                 login_builder.setIcon(android.R.drawable.ic_dialog_info);
                 login_builder.setView(loginView);
 
+                final AlertDialog login_dialog = login_builder.show();
+
                 // 登录弹窗 - 确定键绑定
-                login_builder.setNegativeButton("确定", new DialogInterface.OnClickListener() {
+                sureButton.setOnClickListener( new View.OnClickListener(){
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String iName = inputName.getText().toString();
-                        String iPsw = inputPsw.getText().toString();
+                    public void onClick(View view) {
+                        try{
+                            String iName = inputName.getText().toString();
+                            String iPsw = inputPsw.getText().toString();
 
-                        Log.d(TestLog, "Login  name:" + iName + " psw:" + iPsw);
+                            Log.d(TestLog, "Login  name:" + iName + " psw:" + iPsw);
 
-                        // 合法性审查 通过socket与服务器沟通
-                        new Thread(new LoginThread(iName, iPsw)).start();
+                            // 合法性审查 通过socket与服务器沟通
+                            new Thread(new LoginThread(iName, iPsw)).start();
+
+                            Log.d(TestLog, "dialog dismiss");
+                            login_dialog.dismiss();
+                        }catch(Exception e){
+                            Log.d(TestLog, "dismiss error:" + e.getMessage());
+                        }
                     }
                 });
-
-                // 登录弹窗 - 取消事件绑定
-                login_builder.setPositiveButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        Log.d(TestLog, "cancel login");
-                    }
-                });
-                login_builder.show();
             }
         });
 
 
         // 主界面注册按钮
-        Button registerButton = (Button) findViewById(R.id.register_button);
+        Button registerButton = (Button) findViewById(R.id.tabbutton_regis);
         registerButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.d(TestLog, "Sign up");
@@ -113,11 +133,13 @@ public class MainActivity extends Activity{
                 // 注册弹窗
                 AlertDialog.Builder register_builder = new AlertDialog.Builder(MainActivity.this);
                 LayoutInflater factory = LayoutInflater.from(MainActivity.this);
-                final View loginView = factory.inflate(R.layout.register_table, null);
+                final View registerView = factory.inflate(R.layout.activity_register, null);
 
-                final EditText inputName = (EditText) loginView.findViewById(R.id.register_username);
-                final EditText inputPsw1 = (EditText) loginView.findViewById(R.id.register_psw1);
-                final EditText inputPsw2 = (EditText) loginView.findViewById(R.id.register_psw2);
+                final EditText inputName = (EditText) registerView.findViewById(R.id.register_username);
+                final EditText inputPsw1 = (EditText) registerView.findViewById(R.id.register_password);
+                final EditText inputPsw2 = (EditText) registerView.findViewById(R.id.register_password_repeat);
+
+                final Button sureButton = (Button) registerView.findViewById(R.id.register_button);
 
                 Log.d(TestLog, "init login var");
 
@@ -129,21 +151,13 @@ public class MainActivity extends Activity{
 
                 register_builder.setTitle("注册");
                 register_builder.setIcon(android.R.drawable.ic_dialog_info);
-                register_builder.setView(loginView);
-
-                // 注册弹窗 - 取消键绑定
-                register_builder.setPositiveButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        Log.d(TestLog, "cancel register");
-                    }
-                });
+                register_builder.setView(registerView);
 
                 // 注册弹窗 - 确定事件绑定
-                register_builder.setNegativeButton("确定", new DialogInterface.OnClickListener() {
+                final AlertDialog register_dialog = register_builder.show();
+                sureButton.setOnClickListener(new View.OnClickListener(){
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(View view) {
                         // 注册信息确定
                         String iName = inputName.getText().toString();
                         String iPsw1 = inputPsw1.getText().toString();
@@ -154,17 +168,25 @@ public class MainActivity extends Activity{
                         // 查询是否存在/合法性 + 实现及返回结果
                         Log.d(TestLog, "Register  name:" + iName + " psw:" + iPsw1 + " psw confirm:" + iPsw2);
                         new Thread(new RegisterThread(iName, iPsw1, iPsw2)).start();
+
+                        register_dialog.dismiss();
                     }
                 });
-
-                register_builder.show();
             }
         });
 
         // 查看相册功能
-        Button watchButton = (Button) findViewById(R.id.watch_button);
+        Button watchButton = (Button) findViewById(R.id.tabbutton_see);
         watchButton.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
+                Log.d(TestLog, "View the Album");
+
+                // 先刷新 后浏览
+                File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH + java.io.File.separator);
+                scanDir(MainActivity.this, file.getAbsolutePath());
+
+                Log.d(TestLog, "Send Broadcast");
+
                 String intentact = "";
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
                     intentact = Intent.ACTION_PICK;
@@ -173,70 +195,123 @@ public class MainActivity extends Activity{
                 }
                 Intent intent = new Intent(intentact);
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+                Log.d(TestLog, "Look the Album");
                 startActivityForResult(intent, WATCHINTENT);
             }
         });
 
         // 主界面拍照按钮
-        Button cameraButton = (Button) findViewById(R.id.camera_button);
+        Button cameraButton = (Button) findViewById(R.id.tabbutton_take);
         cameraButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.d(TestLog, "Took photo");
-                if(hasLogin == false){
-                    // 未登录 - 提示及不允许拍摄
-                    Log.d(TestLog, "do not Login");
+
+                Log.d(TestLog, "Check If App is installed");
+                if(!CallYaYa.checkYaYaExist(MainActivity.this)){
+                    // 未安装YaYa APP - 提示及跳转下载页面
+
+                    Log.d(TestLog, "YaYa App is not installed");
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("尚未登录");
+                    builder.setTitle("出错误啦");
+                    builder.setMessage("未下载辅助APP！");
                     builder.setIcon(android.R.drawable.ic_dialog_info);
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton("点击下载", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+
+                            // 跳转到下载页面
+                            Intent intent = new Intent();
+                            intent.setAction("android.intent.action.VIEW");
+                            Uri content_url = Uri.parse("https://android.myapp.com/myapp/detail.htm?apkName=com.wifidevice.coantec.activity#");
+                            intent.setData(content_url);
+                            startActivity(intent);
+                        }
+                    });
+                    builder.setPositiveButton("稍后再说", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
                     });
                     builder.show();
+                    return;
                 }
-                else{
-                    // 已登录 - 进入拍照活动
-                    Intent intent = new Intent();
-                    intent.setClass(MainActivity.this, CameraActivity.class);
-                    startActivityForResult(intent, TAKECAMERA);
-                }
+
+                Intent intent = new Intent();
+                //包名 包名+类名（全路径）
+                ComponentName comp = new ComponentName("com.wifidevice.coantec.activity","com.methnm.coantec.activity.MainActivity");
+                intent.setComponent(comp);
+                intent.setAction("android.intent.action.MAIN");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("data", "123");
+                startActivity(intent);
             }
         });
+
+        // 主界面上传图像功能
+        ImageView sendPic = (ImageView) findViewById(R.id.img_tab_zhenduan);
+        sendPic.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                //切换至查看已有相册事件
+                File dir = new File(Environment.getExternalStorageDirectory(), YAYA_PATH);
+                if(dir.exists() && dir.isFile()) {
+                    dir.delete();
+                }
+                if(!dir.exists()) {
+                    dir.mkdir();
+                }
+                // 先刷新后选择
+                File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH);
+                scanDir(MainActivity.this, file.getAbsolutePath());
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                Uri uri = Uri.fromFile(file);
+                intent.setData(uri);
+                intent.setType("image/*");
+                startActivityForResult(intent, SENDPICINTENT);
+            }
+        });
+
+        // 查看图片完毕
+        ImageView imageRecover = (ImageView)findViewById(R.id.ivImage);
+        imageRecover.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ivImage.setVisibility(View.INVISIBLE);
+            }
+        });
+
+
     }
+
 
     protected void onActivityResult(int requestCode, int result, Intent data) {
         Log.d(TestLog, "requeseCode = " + requestCode);
         if(requestCode == TAKECAMERA){
-            if(photo == null) {
-                Log.d(TestLog, "Interrupt Cancel in Taking Photo");
-                return;
-            }
-
-            // 插入系统图库
-            Log.d(TestLog, "deal photo:" + photo.getAbsolutePath());
-            try {
-                MediaStore.Images.Media.insertImage(null, photo.getAbsolutePath(), photo.getName(), null);
-            } catch (FileNotFoundException e) {}
-
-            Uri uri = Uri.fromFile(photo);
-            Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            intent.setData(uri);
-
-            setPhoto(null);
-            Log.d(TestLog, "deal ok");
-            sendBroadcast(intent);
+            // 拍照功能已改为调用已有YaYa APP对应功能
         }
         else if(requestCode == WATCHINTENT) {
+            Log.d(TestLog, "show select pic:");
             // 显示图片
+            if(data == null){
+                Log.d(TestLog, "Select Pic Cancel");
+                return;
+            }
             Uri uri = data.getData();
             Intent intent = new Intent();
             intent.setAction(android.content.Intent.ACTION_VIEW);
             intent.setDataAndType(uri, "image/*");
             startActivity(intent);
+        }
+        else if(requestCode == SENDPICINTENT){ // 向服务器上传图片并返回结果
+            // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
+            final Uri uri = data.getData();
+
+            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
+            Log.d(TestLog, "img path " + sendPath);
+            File uploadFile = new File(sendPath);
+            new Thread(new SocketSendGetThread(uploadFile)).start();
         }
     }
 
@@ -251,6 +326,8 @@ public class MainActivity extends Activity{
             if(msg.what == 0) {
                 Log.d(TestLog, "in handle Message!");
                 Bitmap bitmap = (Bitmap) msg.obj;
+                ivImage.setImageBitmap(bitmap);
+                ivImage.setVisibility(View.VISIBLE);
             }
             else if(msg.what <= 5){
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -476,6 +553,177 @@ public class MainActivity extends Activity{
                 handler.sendMessage(message);
                 Log.d(TestLog, "catch error:" + e.getMessage());
             }
+        }
+    }
+
+    // 通过Socket进行图片收发
+    public class SocketSendGetThread implements Runnable{
+        private File file;
+        public SocketSendGetThread(File file) {
+            this.file = file;
+        }
+        @Override
+        public void run() {
+            Log.d(TestLog, "SocketSendImg");
+            Socket socket;
+            try {
+                // 创建Socket 指定服务器IP和端口号
+                socket = new Socket(LocalHost, port);
+
+                // 创建InputStream用于读取文件
+                InputStream inputFile = new FileInputStream(file);
+
+                // 创建Socket的InputStream用来接收数据
+                InputStream inputConnect = socket.getInputStream();
+
+                // 创建Socket的OutputStream用于发送数据
+                OutputStream outputConnect = socket.getOutputStream();
+
+                // 发送识别码
+                outputConnect.write("Picture".getBytes());
+                outputConnect.flush();
+
+                // send分隔 div 1
+                inputConnect.read(new byte[10]);
+
+                // 发送文件大小
+                long fileSize = inputFile.available();
+                String fileSizeStr = fileSize + "";
+                outputConnect.write(fileSizeStr.getBytes());
+                outputConnect.flush();
+
+                // send分隔 div 2
+                inputConnect.read(new byte[10]);
+
+                //将本地文件转为byte数组
+                byte buffer[] = new byte[4 * 1024];
+                int tmp = 0;
+                // 循环读取文件
+                while((tmp = inputFile.read(buffer)) != -1) {
+                    outputConnect.write(buffer, 0, tmp);
+                }
+
+                // 发送读取数据到服务端
+                outputConnect.flush();
+
+                // 关闭输入流
+                inputFile.close();
+
+                // 通过socket与RequestURL建立连接，并接受一张图片存到本地
+                Log.d(TestLog, "SocketGetImg");
+
+                // 接收返回码
+                byte symCodeBuff[] = new byte[200];
+                int symCode = inputConnect.read(symCodeBuff);
+                String symCodeStr = new String(symCodeBuff, 0, symCode);
+                symCode = Integer.valueOf(symCodeStr);
+                Log.d(TestLog, "Sym Code is " + symCode);
+
+                // 返回码表明有误
+                if(symCode != 0) {
+                    // 设置返回信息
+                    android.os.Message message = Message.obtain();
+                    message.obj = null;
+                    message.what = symCode;
+                    Log.d(TestLog, "message is ok");
+                    handler.sendMessage(message);
+                    Log.d(TestLog, "handler is ok");
+
+                    inputConnect.close();
+                    outputConnect.close();
+                    socket.close();
+                    return;
+                }
+
+                // 发送分隔符
+                outputConnect.write("BreakTime".getBytes());
+                outputConnect.flush();
+
+                // 定位输出路径
+                File dir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
+                if(dir.exists() && dir.isFile()) {
+                    dir.delete();
+                }
+                if(!dir.exists()) {
+                    dir.mkdir();
+                }
+
+                // 使用时间作为输出
+                Date date = new Date(System.currentTimeMillis());
+                Log.d(TestLog, "break in date");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
+                Log.d(TestLog, "break in sdf");
+                String filePath = dir.getAbsolutePath() + "/Receive_" + dateFormat.format(date) + ".jpg";
+                Log.d(TestLog, "break2");
+                FileOutputStream outputStream = new FileOutputStream(filePath);
+                Log.d(TestLog, "break3");
+
+                // 读取接收文件大小
+                byte piclenBuff[] = new byte[200];
+                int picLen = inputConnect.read(piclenBuff);
+                String picLenStr = new String(piclenBuff, 0, picLen);
+                picLen = Integer.valueOf(picLenStr);
+                Log.d(TestLog, "fileSize is:" + picLen);
+
+                // 发送确认信息
+                outputConnect.write("receive".getBytes());
+                outputConnect.flush();
+
+                // 读取接收文件
+                byte buffer2[] = new byte[picLen];
+                int offset = 0;
+                while(offset < picLen) {
+                    int len = inputConnect.read(buffer2, offset, picLen - offset);
+                    Log.d(TestLog, "" + len);
+                    outputStream.write(buffer2, offset, len);
+                    offset += len;
+                }
+                Log.d(TestLog, "yeah");
+                inputConnect.close();
+                outputStream.close();
+
+                // 关闭连接
+                socket.close();
+                Log.d(TestLog, "Get Img success.The result is " + filePath);
+                if(filePath.equals("")) return;
+                Bitmap bitmap = BitmapFactory.decodeByteArray(buffer2, 0, offset);
+                Log.d(TestLog, "bitmap is ok");
+                android.os.Message message = Message.obtain();
+                message.obj = bitmap;
+                message.what = 0;
+                Log.d(TestLog, "message is ok");
+                handler.sendMessage(message);
+                Log.d(TestLog, "handler is ok");
+
+            }catch(Exception e) {
+                Log.d(TestLog, "catch error:" + e.getMessage());
+            }
+
+        }
+
+    }
+
+    // 文件刷新
+    public static void scanFile(Context context, String filePath) {
+        Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        scanIntent.setData(Uri.fromFile(new File(filePath)));
+        context.sendBroadcast(scanIntent);
+    }
+
+    // 文件夹刷新
+    public static void scanDir(Context context, String dir) {
+        File[] files = new File(dir).listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isFile();
+            }
+        });
+
+        String[] paths = new String[files.length];
+        for (int co = 0; co < files.length; co++) {
+            paths[co] = files[co].getAbsolutePath();
+            Log.d(TestLog, "Scan File :" + files[co].getAbsolutePath());
+            scanFile(context, paths[co]);
         }
     }
 

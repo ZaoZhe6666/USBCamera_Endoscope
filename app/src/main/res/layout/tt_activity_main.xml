@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/bottom_navigation_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorWhite"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="5dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp">
+
+        <Button
+            android:id="@+id/tabbutton_login"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:text="登录"
+
+            android:layout_gravity="center"
+            android:gravity="center"
+            />
+
+        <Button
+            android:id="@+id/tabbutton_regis"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:text="注册"
+
+            android:layout_gravity="center"
+            android:gravity="center"
+            />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="8" />
+
+        <Button
+            android:id="@+id/tabbutton_take"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:text="拍照"
+            android:layout_gravity="center"
+            android:gravity="center"
+            />
+
+        <Button
+            android:id="@+id/tabbutton_see"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:text="查看相册"
+
+            android:layout_gravity="center"
+            android:gravity="center"
+            />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/div_tab_bar"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/color_line"
+        android:layout_above="@id/bottom_navigation_bar_container"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/div_tab_bar"
+        >
+        <ImageView
+            android:id="@+id/ivImage"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottom_tab_zhenduan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:gravity="bottom"
+        android:paddingBottom="5dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/zhenduan_circle"
+        >
+        <ImageView
+            android:id="@+id/img_tab_zhenduan"
+            android:layout_width="@dimen/bottom_tab_image_zhenduan"
+            android:layout_height="@dimen/bottom_tab_image_zhenduan"
+            android:scaleType="centerInside"
+            android:layout_gravity="center"
+            android:src="@drawable/tab_zhenduan_nor"
+            />
+        <TextView
+            android:id="@+id/txt_tab_zhenduan"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorWhite"
+            android:textSize="8dp"
+            android:text="上传图像"
+            />
+    </LinearLayout>
+
+</RelativeLayout>

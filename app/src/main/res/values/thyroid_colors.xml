@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorThyroidApp">#2c94e6</color>
+
+    <color name="colorPrimary">#2c94e6</color>
+    <color name="textColorPrimary">#666</color>
+    <color name="textColorDefault">#666</color>
+    <color name="backgroudPrimary">#EFEEEC</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+
+    <!-- 按钮相关的三个颜色：默认+按下去+按过之后 -->
+    <color name="color_button_default">#2c94e6</color>
+    <color name="view_disabled">#CCC</color>
+    <!-- 按下去的颜色 -->
+    <color name="color_button_pressed">#00bfe8</color>
+    <color name="color_button_selected">#2c94e6</color>
+    <color name="color_button_unselected">#A4D0F0</color>
+
+    <color name="color_text_default">#2c94e6</color>
+    <color name="color_text_pressed">#00bfe8</color>
+
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorWhite">#FFF</color>
+    <color name="colorBlack">#000</color>
+    <color name="colorGreen">#0F0</color>
+    <color name="colorGray">#AAA</color>
+    <color name="color_Blue">#00F</color>
+
+    <!-- 获取验证码的按钮点击之后 -->
+    <color name="color_get_code_before_click">#2c94e6</color>
+    <color name="color_get_code_after_click">#000</color>
+
+    <!-- 选中与的颜色 -->
+    <color name="color_choosed">#2c94e6</color>
+    <color name="color_unchoosed">#92a1af</color>
+    <color name="color_touch">#a2d0f2</color>
+    <color name="color_touch_zhenduan">#a2d0f2</color>
+
+    <!---->
+    <color name="color_line">#999</color>
+
+    <!-- 医圈背景色 -->
+    <color name="color_yiquan_user">#EEF7FC</color>
+    <color name="color_yiquan_user_name">#4A94C8</color>
+    <color name="color_yiquan_user_photo">#91A1B0</color>
+    <color name="color_head_picture_background">#91A1B0</color>
+
+    <color name="color_yiquan_userinfo">#999999</color>
+
+    <!-- 病例所用颜色 -->
+    <color name="color_bingli_ciecle1">#2c94e6</color>
+    <color name="color_bingli_ciecle2">#3368DE</color>
+    <color name="color_bingli_ciecle3">#A2D0F2</color>
+    <color name="color_bingli_ciecle4">#00BFE8</color>
+    <color name="color_bingli_ciecle5">#03B1FF</color>
+
+    <!-- 病例所用颜色 -->
+    <color name="color_mine_state_success">#70b359</color>
+    <color name="color_mine_state_continue">#f39800</color>
+    <color name="color_mine_state_false">#da4e47</color>
+
+
+    <!-- 会话 -->
+    <color name="color_chat_new_friend">#70b359</color>
+    <color name="color_chat_group_chat">#f39800</color>
+    
+    <color name="color_no_info_hint">#ABABAB</color>
+
+
+    <!-- 手放在图上和离开图 doublewjx edit: 20170517 -->
+    <color name="color_touch_image_filter">#90000000</color>
+    <color name="color_untouch_image_filter">#20000000</color>
+    <color name="color_no_image_filter">#00000000</color>
+
+    <!--Roger-->
+
+
+</resources>

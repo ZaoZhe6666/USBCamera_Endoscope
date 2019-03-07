@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/l_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:background="?attr/colorPrimary"
+        >
+        <com.vrphogame.thyroid.widget.ToolbarViewCommon
+            android:id="@+id/top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            custom:myTitleText_common="My study records"
+            custom:myBackCode_common="@string/fa_angle_left"
+            >
+        </com.vrphogame.thyroid.widget.ToolbarViewCommon>
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F2F2F2">
+        <ImageView
+            android:id="@+id/mine_jiaoxue_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/mine_jiaoxue_bg"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/mine_jiaoxue"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mine_jiaoxue_bg"
+            android:layout_marginTop="30dp"
+            android:layout_centerHorizontal="true"
+            android:text="Thyroid Ultrasound Diagnosis Teaching System"/>
+    </RelativeLayout>
+</LinearLayout>

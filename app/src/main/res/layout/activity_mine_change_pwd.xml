@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/l_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:background="?attr/colorPrimary"
+        >
+        <com.vrphogame.thyroid.widget.ToolbarViewCommon
+            android:id="@+id/top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            custom:myBackCode_common="@string/fa_angle_left">
+        </com.vrphogame.thyroid.widget.ToolbarViewCommon>
+    </LinearLayout>
+    <EditText
+        android:id="@+id/et_newPwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:textSize="@dimen/font_h3"
+        android:inputType="textPassword"
+        android:background="@drawable/edittext_yuanjiaojuxing"
+        android:hint="Please enter your new password"/>
+    <EditText
+        android:id="@+id/et_checkPwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:textSize="@dimen/font_h3"
+        android:inputType="textPassword"
+        android:background="@drawable/edittext_yuanjiaojuxing"
+        android:hint="Confirm new password"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
+        android:textSize="10sp"
+        android:textColor="#999999"
+        android:text="Please enter your new password"/>
+    <Button
+        android:id="@+id/bt_submit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_selector_white_background_blue_border"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:paddingRight="80dp"
+        android:paddingLeft="80dp"
+        android:textColor="@drawable/textcolor_selector"
+        android:textSize="@dimen/font_h2"
+        android:text="Confirm"/>
+</LinearLayout>

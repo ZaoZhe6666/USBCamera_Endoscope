@@ -1,0 +1,100 @@
+<resources>
+
+    <string name="yindaoye_button">Open</string>
+    <string name="yindaoye_text">The exclusive tool that makes doctors life easier</string>
+    <string name="register_declaration1">This app will in no circumstance reveal or communicate your phone number, it is solely used for acount recovery purposes</string>
+    <string name="register_declaration2">I have read and agree to the terms of conditions in</string>
+    <string name="register_declaration">《User Agreement》</string>
+    <string name="circle_edit">Picture description...</string>
+
+    <string name="bottom_tab_scale">0.6</string>
+    <string name="bottom_tab_scale_zhenduan">1</string>
+
+    <string name="main_thyroid_circle">Medical circle</string>
+    <string name="main_thyroid_bingli">Cases</string>
+    <string name="main_thyroid_diagnose">Diagnosis</string>
+    <string name="main_thyroid_chat">Messages</string>
+    <string name="main_thyroid_contact">Contacts</string>
+    <string name="main_thyroid_mine">Profile</string>
+    <string name="main_thyroid_images">My images</string>
+
+
+    <string name="add_friend">Add friend</string>
+    <string name="delete_friend">Delete friend</string>
+    <string name="edit_friend">Add notes and edit groups</string>
+    <string name="edit_friend_info">Edit friend information</string>
+    <string name="search_new_friend">Enter username, mobile number or nickname</string>
+    <string name="recomment_list">Recommended list</string>
+    <string name="recomment_friend">Recommend friend</string>
+    <string name="see_more">See more &#xf105;</string>
+    <string name="search_user_no_result">The user you are looking for does not exist</string>
+    <string name="friend_detail">Friends details</string>
+    <string name="interst_point">Points of interests</string>
+    <string name="person_bingli">Medical record</string>
+    <string name="tv_add_friend">Add friend</string>
+    <string name="tv_accept_friend">Accept friend request</string>
+    <string name="thyroid_send_message">Send a message</string>
+
+    <string name="friend_check">Friend verification</string>
+    <string name="send_friend_check">Send</string>
+    <string name="new_friend">New friends</string>
+    <string name="new_friend_detail">New friend <details></details></string>
+    <string name="group_contact">Group chat</string>
+    <string name="text_reply">Reply</string>
+
+    <string name="search_all">Chat history, contacts and groups</string>
+    <string name="group_management">Group management</string>
+
+
+    <string name="str_complete">Complete</string>
+    <string name="str_back">Previous</string>
+
+    <!--<string name="app_name">蝶医</string>-->
+    <!--<string name="yindaoye_button">开启蝶医</string>-->
+    <!--<string name="yindaoye_text">专属医生的 专业提升工具</string>-->
+    <!--<string name="register_declaration1">蝶医承诺：不会泄露你的手机号，仅用于登录和找回密码</string>-->
+    <!--<string name="register_declaration2">我已阅读并同意</string>-->
+    <!--<string name="register_declaration">《甲状腺医圈用户协议》</string>-->
+    <!--<string name="circle_edit">用文字描述一下图片......</string>-->
+
+    <!--<string name="bottom_tab_scale">0.6</string>-->
+    <!--<string name="bottom_tab_scale_zhenduan">1</string>-->
+
+    <!--<string name="main_thyroid_circle">医圈</string>-->
+    <!--<string name="main_thyroid_bingli">病例</string>-->
+    <!--<string name="main_thyroid_diagnose">诊断</string>-->
+    <!--<string name="main_thyroid_chat">会话</string>-->
+    <!--<string name="main_thyroid_contact">通讯录</string>-->
+    <!--<string name="main_thyroid_mine">我的</string>-->
+
+
+    <!--<string name="add_friend">添加好友</string>-->
+    <!--<string name="delete_friend">删除好友</string>-->
+    <!--<string name="edit_friend">设置备注及分组</string>-->
+    <!--<string name="edit_friend_info">编辑好友信息</string>-->
+    <!--<string name="search_new_friend">输入账号、手机号或昵称搜索</string>-->
+    <!--<string name="recomment_list">推荐列表</string>-->
+    <!--<string name="recomment_friend">推荐好友</string>-->
+    <!--<string name="see_more">查看更多 &#xf105;</string>-->
+    <!--<string name="search_user_no_result">该用户不存在</string>-->
+    <!--<string name="friend_detail">朋友详情</string>-->
+    <!--<string name="interst_point">兴趣点</string>-->
+    <!--<string name="person_bingli">病历夹</string>-->
+    <!--<string name="tv_add_friend">添加好友</string>-->
+    <!--<string name="tv_accept_friend">通过验证</string>-->
+    <!--<string name="thyroid_send_message">发消息</string>-->
+
+    <!--<string name="friend_check">好友验证</string>-->
+    <!--<string name="send_friend_check">发送</string>-->
+    <!--<string name="new_friend">新的朋友</string>-->
+    <!--<string name="new_friend_detail">新朋友详情</string>-->
+    <!--<string name="group_contact">群聊</string>-->
+    <!--<string name="text_reply">回复</string>-->
+
+    <!--<string name="search_all">搜索 会话记录，通讯录，群</string>-->
+    <!--<string name="group_management">分组管理</string>-->
+
+
+    <!--<string name="str_complete">完成</string>-->
+    <!--<string name="str_back">返回</string>-->
+</resources>
