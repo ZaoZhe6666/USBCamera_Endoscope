@@ -19,6 +19,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -183,6 +186,13 @@ public class MainActivity extends Activity{
 
                 // 先刷新 后浏览
                 File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH + java.io.File.separator);
+                if(file.exists() && file.isFile()) {
+                    file.delete();
+                }
+                if(!file.exists()) {
+                    file.mkdir();
+                }
+
                 scanDir(MainActivity.this, file.getAbsolutePath());
 
                 Log.d(TestLog, "Send Broadcast");
@@ -198,6 +208,7 @@ public class MainActivity extends Activity{
                 Log.d(TestLog, "Look the Album");
                 startActivityForResult(intent, WATCHINTENT);
             }
+
         });
 
         // 主界面拍照按钮
@@ -313,10 +324,73 @@ public class MainActivity extends Activity{
             File uploadFile = new File(sendPath);
             new Thread(new SocketSendGetThread(uploadFile)).start();
         }
+        File mPhotoFile = new File(getAppFile(this, "images/user_take.jpg"));
+        switch (requestCode) {
+            case CROP_PHOTO: //裁剪照片后
+                if (data != null) {
+                    Bitmap bitmap = data.getExtras().getParcelable("data");
+                    ivImage.setImageBitmap(bitmap);
+                }
+                //裁剪后删除拍照的照片
+                if (mPhotoFile.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    mPhotoFile.delete();
+                }
+                break;
+            case ACTION_TAKE_PHOTO:
+                if (mPhotoFile.exists()) {
+                    cropPic(getAppFile(this, "images/user_take.jpg"));
+                }
+                break;
+        }
     }
 
     public static void setPhoto(File file){
         photo = file;
+    }
+
+
+    public final int CROP_PHOTO = 10;
+    public final int ACTION_TAKE_PHOTO = 20;
+
+
+    /**
+     * 获取本应用在系统的存储目录
+     */
+    public static String getAppFile(Context context, String uniqueName) {
+        String cachePath;
+        if ((Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+                || !Environment.isExternalStorageRemovable())
+                && context.getExternalCacheDir() != null) {
+            cachePath = context.getExternalCacheDir().getParent();
+        } else {
+            cachePath = context.getCacheDir().getParent();
+        }
+        return cachePath + File.separator + uniqueName;
+    }
+
+    /**
+     * 跳转到系统裁剪图片页面
+     * @param imagePath 需要裁剪的图片路径
+     */
+    private void cropPic(String imagePath) {
+        File file = new File(imagePath);
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri contentUri = FileProvider.getUriForFile(this, "com.leon.crop.fileprovider", file);
+            intent.setDataAndType(contentUri, "image/*");
+        } else {
+            intent.setDataAndType(Uri.fromFile(file), "image/*");
+        }
+        intent.putExtra("crop", "true");
+        intent.putExtra("aspectX", 0.1);
+        intent.putExtra("aspectY", 0.1);
+        intent.putExtra("outputX", 150);
+        intent.putExtra("outputY", 150);
+        intent.putExtra("return-data", true);
+        intent.putExtra("scale", true);
+        startActivityForResult(intent, CROP_PHOTO);
     }
 
     @SuppressLint("HandlerLeak")
@@ -718,7 +792,7 @@ public class MainActivity extends Activity{
                 return pathname.isFile();
             }
         });
-
+        if(files == null)   return;
         String[] paths = new String[files.length];
         for (int co = 0; co < files.length; co++) {
             paths[co] = files[co].getAbsolutePath();
