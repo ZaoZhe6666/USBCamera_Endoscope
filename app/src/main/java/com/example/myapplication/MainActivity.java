@@ -183,6 +183,12 @@ public class MainActivity extends Activity{
 
                 // 先刷新 后浏览
                 File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH + java.io.File.separator);
+                if(file.exists() && file.isFile()) {
+                    file.delete();
+                }
+                if(!file.exists()) {
+                    file.mkdir();
+                }
                 scanDir(MainActivity.this, file.getAbsolutePath());
 
                 Log.d(TestLog, "Send Broadcast");
@@ -262,11 +268,10 @@ public class MainActivity extends Activity{
                     dir.mkdir();
                 }
                 // 先刷新后选择
-                File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH);
-                scanDir(MainActivity.this, file.getAbsolutePath());
+                scanDir(MainActivity.this, dir.getAbsolutePath());
 
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                Uri uri = Uri.fromFile(file);
+                Uri uri = Uri.fromFile(dir);
                 intent.setData(uri);
                 intent.setType("image/*");
                 startActivityForResult(intent, SENDPICINTENT);
