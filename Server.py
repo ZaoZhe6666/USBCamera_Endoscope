@@ -3,7 +3,7 @@ import os
 
 sk = socket.socket()
 
-sk.bind(("192.168.1.106", 5000))
+sk.bind(("172.27.35.4", 5000))
 sk.listen(5)
 
 while True:
@@ -65,10 +65,10 @@ while True:
 		# 分隔符
 		conn.recv(1024)
 
-		file_size = os.stat("psb.gif").st_size
+		file_size = os.stat("psb.png").st_size
 		has_sent = 0
 
-		f = open("psb.gif", "rb")
+		f = open("psb.png", "rb")
 
 		#修改1：提前返回发送图片大小
 		conn.send(str(file_size).encode('utf-8'))

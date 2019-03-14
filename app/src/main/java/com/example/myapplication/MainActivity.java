@@ -41,7 +41,7 @@ import java.util.Locale;
 
 @SuppressLint("NewApi")
 public class MainActivity extends Activity{
-    public static String LocalHost = "192.168.1.106";
+    public static String LocalHost = "172.27.35.4";
     private static String TestLog = "TestLog";
     private static String YAYA_PATH = "yaya/DCIM/SOAY";
     private static String BACK_PATH = "yaya/DCIM/BACK";
@@ -191,6 +191,15 @@ public class MainActivity extends Activity{
                 }
                 scanDir(MainActivity.this, file.getAbsolutePath());
 
+                File backDir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
+                if(backDir.exists() && backDir.isFile()) {
+                    backDir.delete();
+                }
+                if(!backDir.exists()) {
+                    backDir.mkdir();
+                }
+                scanDir(MainActivity.this, backDir.getAbsolutePath());
+
                 Log.d(TestLog, "Send Broadcast");
 
                 String intentact = "";
@@ -203,6 +212,7 @@ public class MainActivity extends Activity{
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
                 Log.d(TestLog, "Look the Album");
                 startActivityForResult(intent, WATCHINTENT);
+
             }
         });
 
@@ -316,6 +326,20 @@ public class MainActivity extends Activity{
             String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
             Log.d(TestLog, "img path " + sendPath);
             File uploadFile = new File(sendPath);
+
+
+/*            Intent intent = new Intent("com.android.camera.action.CROP");//调用Android系统自带的一个图片剪裁页面,
+            intent.setDataAndType(uri, "image/*");
+            intent.putExtra("crop", "true");//进行修剪
+            // aspectX aspectY 是宽高的比例
+            intent.putExtra("aspectX", 1);
+            intent.putExtra("aspectY", 1);
+            // outputX outputY 是裁剪图片宽高
+            intent.putExtra("outputX", 300);
+            intent.putExtra("outputY", 300);
+            intent.putExtra("return-data", true);
+            startActivityForResult(intent, WATCHINTENT);*/
+
             new Thread(new SocketSendGetThread(uploadFile)).start();
         }
     }
@@ -723,6 +747,8 @@ public class MainActivity extends Activity{
                 return pathname.isFile();
             }
         });
+
+        if(files == null) return;
 
         String[] paths = new String[files.length];
         for (int co = 0; co < files.length; co++) {
