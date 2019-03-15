@@ -27,6 +27,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -292,6 +294,7 @@ public class MainActivity extends Activity{
                 if(!file.exists()) {
                     file.mkdir();
                 }
+
                 scanDir(MainActivity.this, file.getAbsolutePath());
 
                 File backDir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
@@ -317,6 +320,7 @@ public class MainActivity extends Activity{
                 startActivityForResult(intent, WATCHINTENT);
 
             }
+
         });
 
         // 主界面拍照按钮
@@ -423,6 +427,7 @@ public class MainActivity extends Activity{
             startActivity(intent);
         }
         else if(requestCode == SENDPICINTENT){ // 向服务器上传图片 阶段1：裁剪图片
+            Log.d(TestLog, "SEND PIC INTENT 1");
             // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
             final Uri uri = data.getData();
 
@@ -433,32 +438,92 @@ public class MainActivity extends Activity{
             if(!uploadFile.exists()) return;
 
             // 裁剪图片
-            Intent intent = new Intent("com.android.camera.action.CROP");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                Uri contentUri = FileProvider.getUriForFile(this, "com.leon.crop.fileprovider", file);
-                intent.setDataAndType(contentUri, "image/*");
-            } else {
-                intent.setDataAndType(Uri.fromFile(uploadFile), "image/*");
-            }
-            intent.putExtra("crop", "true");
-            intent.putExtra("aspectX", 0.1);
-            intent.putExtra("aspectY", 0.1);
-            intent.putExtra("outputX", 150);
-            intent.putExtra("outputY", 150);
-            intent.putExtra("return-data", true);
-            intent.putExtra("scale", true);
-            startActivityForResult(intent, CUTPICINTENT);
+
+            cropPic(sendPath);
 
         }
-        else if(requestCode == SENDPICINTENT) { // 向服务器上传图片 阶段2：真正上传图片
+        else if(requestCode == CUTPICINTENT) { // 向服务器上传图片 阶段2：真正上传图片
+            Log.d(TestLog, "SEND PIC INTENT 2");
+            Log.d(TestLog, "img path " + photo.getAbsolutePath());
+            String filePath = photo.getAbsolutePath();
+
+            // 保存截取图片
+            if (data != null) {
+                Bitmap bitmap = data.getExtras().getParcelable("data");
+                ivImage.setImageBitmap(bitmap);
+                ivImage.setVisibility(View.VISIBLE);
+
+                try {
+                    File fileCutSave = new File(filePath);
+
+                    //裁剪后删除拍照的照片
+                    if (fileCutSave.exists()) {
+                        //noinspection ResultOfMethodCallIgnored
+                        fileCutSave.delete();
+                    }
+
+                    FileOutputStream out = new FileOutputStream(fileCutSave);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    Log.d(TestLog, "ERROR IN SAVE CUT PIC:" + e.getMessage());
+                }
+            }
+            scanFile(MainActivity.this, filePath);
+            Log.d(TestLog, "UPDATE CUT PIC");
             // 发送图片
-            new Thread(new SocketSendGetThread(uploadFile)).start();
+            new Thread(new SocketSendGetThread(new File(filePath))).start();
         }
     }
 
     public static void setPhoto(File file){
         photo = file;
+    }
+
+
+    public final int CROP_PHOTO = 10;
+    public final int ACTION_TAKE_PHOTO = 20;
+
+
+    /**
+     * 获取本应用在系统的存储目录
+     */
+    public static String getAppFile(Context context, String uniqueName) {
+        String cachePath;
+        if ((Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+                || !Environment.isExternalStorageRemovable())
+                && context.getExternalCacheDir() != null) {
+            cachePath = context.getExternalCacheDir().getParent();
+        } else {
+            cachePath = context.getCacheDir().getParent();
+        }
+        return cachePath + File.separator + uniqueName;
+    }
+
+    /**
+     * 跳转到系统裁剪图片页面
+     * @param imagePath 需要裁剪的图片路径
+     */
+    private void cropPic(String imagePath) {
+        File file = new File(imagePath);
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri contentUri = FileProvider.getUriForFile(this, "console.live.camera.fileprovider", file);
+            intent.setDataAndType(contentUri, "image/*");
+        } else {
+            intent.setDataAndType(Uri.fromFile(file), "image/*");
+        }
+        intent.putExtra("crop", "true");
+        intent.putExtra("aspectX", 0.1);
+        intent.putExtra("aspectY", 0.1);
+        intent.putExtra("outputX", 150);
+        intent.putExtra("outputY", 150);
+        intent.putExtra("return-data", true);
+        intent.putExtra("scale", true);
+        this.photo = file;
+        startActivityForResult(intent, CUTPICINTENT);
     }
 
     @SuppressLint("HandlerLeak")
