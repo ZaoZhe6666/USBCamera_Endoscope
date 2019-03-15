@@ -19,6 +19,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,8 +58,9 @@ public class MainActivity extends Activity{
     private static int REGISINTENT = 300;
     private static int WATCHINTENT = 400;
     private static int SENDPICINTENT = 500;
+    private static int CUTPICINTENT = 600;
 
-    private static int NOTLOGIN = 401;
+    private static int NOTLOGIN = 201;
 
     private ImageView ivImage;
 
@@ -126,6 +128,7 @@ public class MainActivity extends Activity{
 
         // 主界面注册按钮
         Button registerButton = (Button) findViewById(R.id.tabbutton_regis);
+        registerButton.setVisibility(View.INVISIBLE);
         registerButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.d(TestLog, "Sign up");
@@ -172,6 +175,106 @@ public class MainActivity extends Activity{
                         register_dialog.dismiss();
                     }
                 });
+            }
+        });
+
+        // 设置服务器地址及端口号
+        Button btn_SetPort = (Button)findViewById(R.id.tabbutton_set);
+        btn_SetPort.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Log.d(TestLog, "dialog button listen");
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                LayoutInflater factory = LayoutInflater.from(MainActivity.this);
+                final View changeServerView = factory.inflate(R.layout.change_server, null);
+
+                final EditText inputServer = (EditText) changeServerView.findViewById(R.id.text_server);
+                final EditText inputPort = (EditText) changeServerView.findViewById(R.id.text_port);
+
+                Log.d(TestLog, "init var");
+
+                inputServer.setHint(LocalHost);
+                inputPort.setHint("" + port);
+
+                Log.d(TestLog, "init hint over");
+
+                builder.setTitle("修改服务器信息");
+                builder.setIcon(android.R.drawable.ic_dialog_info);
+                builder.setView(changeServerView);
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String iServer = inputServer.getText().toString();
+                        String iPort = inputPort.getText().toString();
+
+                        Log.d(TestLog, "the change :" + iServer + "/" + iPort);
+
+                        // 合法性审查
+                        if(inputCheckServer(iServer)) {
+                            Log.d(TestLog, "change Server");
+                            LocalHost = iServer;
+//							outServer.setText("当前服务器：" + iServer);
+                        }
+                        int inputPort;
+                        try {
+                            if((inputPort = inputCheckPort(iPort)) != -1) {
+                                Log.d(TestLog, "change Port");
+                                port = inputPort;
+//								outPort.setText(out);
+                            }
+                        }catch(Exception e) {
+                            Log.d(TestLog, e.getMessage());
+                        }
+                        Log.d(TestLog, "After the change :" + LocalHost + "/" + port);
+                    }
+                    private boolean inputCheckServer(String iServer) {
+                        // 参考资料https://blog.csdn.net/chaiqunxing51/article/details/50975961/
+                        if(iServer == null || iServer.length() == 0) { // 基础检验
+                            return false;
+                        }
+                        String[] parts = iServer.split("\\.");
+                        if(parts.length != 4) { // 四段ip设置
+                            return false;
+                        }
+                        for(int i = 0; i < 4; i++) {
+                            try {
+                                int n = Integer.parseInt(parts[i]);
+                                if(n< 0 || n > 255) return false; // ip数检验
+                            }catch(NumberFormatException e) {
+                                return false; // 非法字符检验
+                            }
+                        }
+                        return true;
+                    }
+                    private int inputCheckPort(String iPort) {
+                        try {
+                            int port = Integer.parseInt(iPort);
+                            if(1024 < port && port < 65535) {
+                                return port;
+                            }
+                        }catch(NumberFormatException e) {
+                        }
+                        return -1;
+                    }
+                    private int inputCheckColor(String iColor) {
+                        try {
+                            String regex="^#[A-Fa-f0-9]{6}$";
+                            if(iColor.matches(regex)) {
+                                return 0;
+                            }
+                        }catch(Exception e) {
+                        }
+                        return -1;
+                    }
+                });
+
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
+
             }
         });
 
@@ -319,7 +422,7 @@ public class MainActivity extends Activity{
             intent.setDataAndType(uri, "image/*");
             startActivity(intent);
         }
-        else if(requestCode == SENDPICINTENT){ // 向服务器上传图片并返回结果
+        else if(requestCode == SENDPICINTENT){ // 向服务器上传图片 阶段1：裁剪图片
             // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
             final Uri uri = data.getData();
 
@@ -327,19 +430,29 @@ public class MainActivity extends Activity{
             Log.d(TestLog, "img path " + sendPath);
             File uploadFile = new File(sendPath);
 
+            if(!uploadFile.exists()) return;
 
-/*            Intent intent = new Intent("com.android.camera.action.CROP");//调用Android系统自带的一个图片剪裁页面,
-            intent.setDataAndType(uri, "image/*");
-            intent.putExtra("crop", "true");//进行修剪
-            // aspectX aspectY 是宽高的比例
-            intent.putExtra("aspectX", 1);
-            intent.putExtra("aspectY", 1);
-            // outputX outputY 是裁剪图片宽高
-            intent.putExtra("outputX", 300);
-            intent.putExtra("outputY", 300);
+            // 裁剪图片
+            Intent intent = new Intent("com.android.camera.action.CROP");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                Uri contentUri = FileProvider.getUriForFile(this, "com.leon.crop.fileprovider", file);
+                intent.setDataAndType(contentUri, "image/*");
+            } else {
+                intent.setDataAndType(Uri.fromFile(uploadFile), "image/*");
+            }
+            intent.putExtra("crop", "true");
+            intent.putExtra("aspectX", 0.1);
+            intent.putExtra("aspectY", 0.1);
+            intent.putExtra("outputX", 150);
+            intent.putExtra("outputY", 150);
             intent.putExtra("return-data", true);
-            startActivityForResult(intent, WATCHINTENT);*/
+            intent.putExtra("scale", true);
+            startActivityForResult(intent, CUTPICINTENT);
 
+        }
+        else if(requestCode == SENDPICINTENT) { // 向服务器上传图片 阶段2：真正上传图片
+            // 发送图片
             new Thread(new SocketSendGetThread(uploadFile)).start();
         }
     }
