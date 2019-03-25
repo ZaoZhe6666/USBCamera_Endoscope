@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -382,15 +383,21 @@ public class MainActivity extends Activity{
                     dir.delete();
                 }
                 if(!dir.exists()) {
-                    dir.mkdir();
+                    dir.mkdirs();
                 }
+
                 // 先刷新后选择
                 scanDir(MainActivity.this, dir.getAbsolutePath());
 
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                Uri uri = Uri.fromFile(dir);
-                intent.setData(uri);
-                intent.setType("image/*");
+                String intentact = "";
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
+                    intentact = Intent.ACTION_PICK;
+                } else {//4.4版本后
+                    intentact = Intent.ACTION_GET_CONTENT;
+                }
+                Intent intent = new Intent(intentact);
+                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+
                 startActivityForResult(intent, SENDPICINTENT);
             }
         });
@@ -429,19 +436,18 @@ public class MainActivity extends Activity{
         else if(requestCode == SENDPICINTENT){ // 向服务器上传图片 阶段1：裁剪图片
             Log.d(TestLog, "SEND PIC INTENT 1");
             // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
-            final Uri uri = data.getData();
-
-            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
+            Uri uri = data.getData();
+//            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
+//            String sendPath = uri.getPath();
+            String sendPath = UriDeal.getFilePathFromContentUri(uri, this.getContentResolver());
             Log.d(TestLog, "img path " + sendPath);
-            File uploadFile = new File(sendPath);
-
-            if(!uploadFile.exists()) return;
-
-            // 裁剪图片
-
+            if(sendPath == null){
+                Log.d(TestLog, "illegal img path : null");
+                return;
+            }
             cropPic(sendPath);
-
         }
+
         else if(requestCode == CUTPICINTENT) { // 向服务器上传图片 阶段2：真正上传图片
             Log.d(TestLog, "SEND PIC INTENT 2");
             Log.d(TestLog, "img path " + photo.getAbsolutePath());

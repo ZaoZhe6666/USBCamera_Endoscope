@@ -3,7 +3,7 @@ import os
 
 sk = socket.socket()
 
-sk.bind(("172.27.35.4", 5000))
+sk.bind(("10.135.49.55", 5000))
 sk.listen(5)
 
 while True:
