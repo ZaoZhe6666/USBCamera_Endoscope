@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,6 +27,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +36,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -41,10 +44,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import kr.co.namee.permissiongen.PermissionFail;
+import kr.co.namee.permissiongen.PermissionGen;
+import kr.co.namee.permissiongen.PermissionSuccess;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.RequestBody;
+
 
 @SuppressLint("NewApi")
 public class MainActivity extends Activity{
-    public static String LocalHost = "172.27.35.4";
+    public static String LocalHost = "http://192.168.25.220:";
     private static String TestLog = "TestLog";
     private static String YAYA_PATH = "yaya/DCIM/SOAY";
     private static String BACK_PATH = "yaya/DCIM/BACK";
@@ -65,11 +79,34 @@ public class MainActivity extends Activity{
     private static int NOTLOGIN = 201;
 
     private ImageView ivImage;
+    private OkHttpClient client = new OkHttpClient();
+    private String Username = "";
+    public Bitmap afterCutBitmap;//剪切后的图像
+
+    private  void permissionGen(){
+        PermissionGen.with(MainActivity.this)
+                .addRequestCode(200)
+                .permissions(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .request();
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+        PermissionGen.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
+    }
+    @PermissionSuccess(requestCode = 200)
+    public void doSomething(){
+        Toast.makeText(this, "成功", Toast.LENGTH_SHORT).show();
+    }
+    @PermissionFail(requestCode = 200)
+    public void doFailSomething(){
+        Toast.makeText(this, "失败", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tt_activity_main);
+        permissionGen();
 
         hasLogin = false;
         ivImage = (ImageView) findViewById(R.id.ivImage);
@@ -436,9 +473,7 @@ public class MainActivity extends Activity{
             File uploadFile = new File(sendPath);
 
             if(!uploadFile.exists()) return;
-
-            // 裁剪图片
-
+            // 裁剪图
             cropPic(sendPath);
 
         }
@@ -449,8 +484,8 @@ public class MainActivity extends Activity{
 
             // 保存截取图片
             if (data != null) {
-                Bitmap bitmap = data.getExtras().getParcelable("data");
-                ivImage.setImageBitmap(bitmap);
+                //Bitmap bitmap = data.getExtras().getParcelable("data");
+                ivImage.setImageBitmap(afterCutBitmap);
                 ivImage.setVisibility(View.VISIBLE);
 
                 try {
@@ -463,7 +498,7 @@ public class MainActivity extends Activity{
                     }
 
                     FileOutputStream out = new FileOutputStream(fileCutSave);
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    afterCutBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                     out.flush();
                     out.close();
                 } catch (Exception e) {
@@ -505,25 +540,40 @@ public class MainActivity extends Activity{
      * 跳转到系统裁剪图片页面
      * @param imagePath 需要裁剪的图片路径
      */
+
     private void cropPic(String imagePath) {
-        File file = new File(imagePath);
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            Uri contentUri = FileProvider.getUriForFile(this, "console.live.camera.fileprovider", file);
-            intent.setDataAndType(contentUri, "image/*");
-        } else {
-            intent.setDataAndType(Uri.fromFile(file), "image/*");
+        try {
+            File file = new File(imagePath);
+            Uri contentUri = null;
+            Intent intent = new Intent("com.android.camera.action.CROP");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                contentUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".uriprovider", file);
+                intent.setDataAndType(contentUri, "image/*");
+            } else {
+                intent.setDataAndType(Uri.fromFile(file), "image/*");
+            }
+            intent.putExtra("crop", "true");
+            intent.putExtra("aspectX", 0.1);
+            intent.putExtra("aspectY", 0.1);
+            intent.putExtra("outputX", 150);
+            intent.putExtra("outputY", 150);
+            intent.putExtra("return-data", true);
+            intent.putExtra("scale", true);
+            startActivityForResult(intent, CUTPICINTENT);
+            this.photo = file;
+            if(file == null)
+                Log.d("****" , "file空對象");
+            if(intent == null)
+                Log.d("****" , "intent空對象");
+            if(contentUri == null)
+                Log.d("****" , "contentUri空對象");
+            if(photo == null)
+                Log.d("****" , "photo空對象");
+        }catch (Exception e){
+
         }
-        intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 0.1);
-        intent.putExtra("aspectY", 0.1);
-        intent.putExtra("outputX", 150);
-        intent.putExtra("outputY", 150);
-        intent.putExtra("return-data", true);
-        intent.putExtra("scale", true);
-        this.photo = file;
-        startActivityForResult(intent, CUTPICINTENT);
+
     }
 
     @SuppressLint("HandlerLeak")
@@ -536,7 +586,7 @@ public class MainActivity extends Activity{
                 ivImage.setImageBitmap(bitmap);
                 ivImage.setVisibility(View.VISIBLE);
             }
-            else if(msg.what <= 5){
+            else if(msg.what >= 5){
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 String congraText = "";
                 if(msg.what == 1) congraText = "注册成功";
@@ -580,7 +630,38 @@ public class MainActivity extends Activity{
         @Override
         public void run(){
             Log.d(TestLog, "Register Thread - run");
-            Socket socket;
+            android.os.Message message = Message.obtain();
+            message.obj = null;
+
+            RequestBody requestBody = new FormBody.Builder()
+                    .add("name", name)
+                    .add("psw", psw1)
+                    .add("submit", "Sign up")
+                    .build();
+            Request request = new Request.Builder()
+                    .url(LocalHost + port + "/signup")
+                    .post(requestBody)
+                    .build();
+            try{
+                Response response = client.newCall(request).execute();
+                if(!response.isSuccessful()) throw new IOException("Unexpected code");
+
+                if(response.body().string().equals("this nickname cannot use")){
+                    Log.d(TestLog, "Register Thread - Same Name!");
+                    // 保存信息
+                    message.what = 2;
+                    handler.sendMessage(message);
+                }
+
+                System.out.println(response.body().string());
+            }catch (Exception e){
+                //System.out.println(requestBody);
+                message.what = 404;
+                handler.sendMessage(message);
+                Log.d(TestLog, "catch error:" + e.getMessage() + requestBody);
+            }
+
+/*            Socket socket;
 
             // 创建交互handler，用于保存最终结果
             android.os.Message message = Message.obtain();
@@ -662,6 +743,7 @@ public class MainActivity extends Activity{
                 handler.sendMessage(message);
                 Log.d(TestLog, "catch error:" + e.getMessage());
             }
+            */
         }
     }
 
@@ -670,7 +752,7 @@ public class MainActivity extends Activity{
         private String name;
         private String psw;
         public LoginThread(String name, String psw){
-            Log.d(TestLog, "Login Thread - run");
+            Log.d(TestLog, "Login Thread - init");
             this.name = name;
             this.psw = psw;
         }
@@ -678,7 +760,42 @@ public class MainActivity extends Activity{
         @Override
         public void run(){
             Log.d(TestLog, "Login Thread - run");
-            Socket socket;
+            android.os.Message message = Message.obtain();
+            message.obj = null;
+
+            RequestBody requestBody = new FormBody.Builder()
+                    .add("name", name)
+                    .add("psw", psw)
+                    .add("submit", "Login")
+                    .build();
+            Request request = new Request.Builder()
+                    .url(LocalHost + port + "/login")
+                    .post(requestBody)
+                    .build();
+            try{
+                Response response = client.newCall(request).execute();
+                if(!response.isSuccessful()) throw new IOException("Unexpected code");
+
+//                Log.d(TestLog, "response " + response.body().string());
+                if(response.body().string().equals("wrong password")){
+                    Log.d(TestLog, "Login Thread - Illegal Name!");
+                    // 保存信息
+                    message.what = 1;
+                    handler.sendMessage(message);
+//                    response.close();
+                    return;
+                }
+                Username = name;
+                Log.d(TestLog, "Login Thread - Finish Success");
+//                System.out.println(requestBody);
+            }catch (IOException e){
+//                System.out.println(requestBody);
+                message.what = 404;
+                handler.sendMessage(message);
+                Log.d(TestLog, "catch error:" + e.getMessage() + request.url());
+            }
+
+/*            Socket socket;
 
             // 创建交互handler，用于保存最终结果
             android.os.Message message = Message.obtain();
@@ -760,18 +877,55 @@ public class MainActivity extends Activity{
                 handler.sendMessage(message);
                 Log.d(TestLog, "catch error:" + e.getMessage());
             }
+            */
         }
     }
 
     // 通过Socket进行图片收发
     public class SocketSendGetThread implements Runnable{
         private File file;
+        private final MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
         public SocketSendGetThread(File file) {
             this.file = file;
         }
         @Override
         public void run() {
-            Log.d(TestLog, "SocketSendImg");
+            Log.d(TestLog, "OkhttpSendImg");
+            android.os.Message message = Message.obtain();
+            message.obj = null;
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+//                    .addFormDataPart("username", Username)
+//                    .addFormDataPart("submit", "Upload")
+                    .addFormDataPart("image", Username, RequestBody.create(MEDIA_TYPE_JPG, file))
+                    .build();
+            Request request = new Request.Builder()
+                    .url(LocalHost + port + "/upload")
+                    .post(requestBody)
+                    .build();
+            try{
+                Response response = client.newCall(request).execute();
+                if(!response.isSuccessful()) throw new IOException("Unexpected code");
+
+//                Log.d(TestLog, "response " + response.body().string());
+                if(response.body().string().equals("error file type")){
+                    Log.d(TestLog, "Login Thread - Illegal type!");
+                    // 保存信息
+                    message.what = 1;
+                    handler.sendMessage(message);
+//                    response.close();
+                    return;
+                }
+                Log.d(TestLog, "Login Thread - Finish Success");
+//                System.out.println(requestBody);
+            }catch (IOException e){
+//                System.out.println(requestBody);
+                message.what = 404;
+                handler.sendMessage(message);
+                Log.d(TestLog, "catch error:" + e.getMessage() + request.url());
+            }
+            Log.d(TestLog, "catch error:" + requestBody);
+            /*
             Socket socket;
             try {
                 // 创建Socket 指定服务器IP和端口号
@@ -905,7 +1059,7 @@ public class MainActivity extends Activity{
             }catch(Exception e) {
                 Log.d(TestLog, "catch error:" + e.getMessage());
             }
-
+*/
         }
 
     }
