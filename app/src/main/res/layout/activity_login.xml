@@ -31,6 +31,7 @@
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
                     android:textSize="@dimen/font_h3"
+                    android:textColor="#e0000000"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
             </LinearLayout>
@@ -45,6 +46,7 @@
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
                     android:inputType="textPassword"
+                    android:textColor="#e0000000"
                     android:textSize="@dimen/font_h3"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
@@ -71,12 +73,12 @@
                 android:layout_marginTop="15dp"
                 >
                 <TextView
-                    android:id="@+id/view_to_forget_password"
+                    android:id="@+id/login_to_set"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@drawable/textcolor_selector"
                     android:layout_centerInParent="true"
-                    android:text="  Forgot your password?"
+                    android:text="Set the Server/Port"
                     android:textSize="@dimen/font_h3"/>
             </RelativeLayout>
             <RelativeLayout
