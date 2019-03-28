@@ -89,7 +89,6 @@ public class MainActivity extends Activity{
 
     private ImageView ivImage;
     private String Username = "";
-    public Bitmap afterCutBitmap;//剪切后的图像
 
     private  void permissionGen(){
         PermissionGen.with(MainActivity.this)
@@ -399,8 +398,8 @@ public class MainActivity extends Activity{
 
             // 保存截取图片
             if (data != null) {
-                //Bitmap bitmap = data.getExtras().getParcelable("data");
-                ivImage.setImageBitmap(afterCutBitmap);
+                Bitmap bitmap = data.getExtras().getParcelable("data");
+                ivImage.setImageBitmap(bitmap);
                 ivImage.setVisibility(View.VISIBLE);
 
                 try {
@@ -413,7 +412,7 @@ public class MainActivity extends Activity{
                     }
 
                     FileOutputStream out = new FileOutputStream(fileCutSave);
-                    afterCutBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                     out.flush();
                     out.close();
                 } catch (Exception e) {
