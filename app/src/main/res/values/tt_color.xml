@@ -6,12 +6,12 @@
     <color name="panel_bk_color">#fffafafa</color>
     <color name="emo_bk_color">#ffffffff</color>
     <color name="default_light_black_color">#424242</color>
-    <color name="txt_hint_color">#999999</color>
+    <color name="txt_hint_color">#e0000000</color>
 
     <!-- contact item color -->
     <color name="messgae_uname_color">#ffee4566</color>
     <color name="messgae_uname_dark_color">#000000</color>
-    <color name="message_body_text_color">#999999</color>
+    <color name="message_body_text_color">#e0000000</color>
     <color name="message_body_nottext_color">#ffee4566</color>
     <color name="message_time_color">#a0a0a0</color>
 
@@ -25,7 +25,7 @@
     <color name="half_transparent_dark">#e0000000</color>
     <color name="half_transparent_light">#AA000000</color>
     <color name="transparent">#00000000</color>
-    <color name="login_hint_color">#d4d4d4</color>
+    <color name="login_hint_color">#e0000000</color>
 
     <!-- default -->
     <color name="default_light_grey_color">#929292</color>

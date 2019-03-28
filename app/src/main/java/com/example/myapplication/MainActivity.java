@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
@@ -39,21 +41,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.FileNameMap;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 import kr.co.namee.permissiongen.PermissionFail;
 import kr.co.namee.permissiongen.PermissionGen;
 import kr.co.namee.permissiongen.PermissionSuccess;
 import okhttp3.FormBody;
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 
 
 @SuppressLint("NewApi")
@@ -79,7 +88,6 @@ public class MainActivity extends Activity{
     private static int NOTLOGIN = 201;
 
     private ImageView ivImage;
-    private OkHttpClient client = new OkHttpClient();
     private String Username = "";
     public Bitmap afterCutBitmap;//剪切后的图像
 
@@ -112,110 +120,6 @@ public class MainActivity extends Activity{
         ivImage = (ImageView) findViewById(R.id.ivImage);
         ivImage.setVisibility(View.INVISIBLE);
 
-        // 主界面登录按钮
-        Button loginButton = (Button) findViewById(R.id.tabbutton_login);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TestLog, "Sign in");
-
-                // 登录弹窗
-                AlertDialog.Builder login_builder = new AlertDialog.Builder(MainActivity.this);
-                LayoutInflater factory = LayoutInflater.from(MainActivity.this);
-
-                final View loginView = factory.inflate(R.layout.activity_login, null);
-                final EditText inputName = (EditText) loginView.findViewById(R.id.editText_login_username);
-                final EditText inputPsw = (EditText) loginView.findViewById(R.id.editText_login_password);
-                final Button sureButton = (Button) loginView.findViewById(R.id.btn_login);
-
-                Log.d(TestLog, "init login var");
-
-                inputName.setHint("请输入用户名");
-                inputPsw.setHint("请输入密码");
-
-                Log.d(TestLog, "init hint over");
-
-                login_builder.setTitle("登录");
-                login_builder.setIcon(android.R.drawable.ic_dialog_info);
-                login_builder.setView(loginView);
-
-                final AlertDialog login_dialog = login_builder.show();
-
-                // 登录弹窗 - 确定键绑定
-                sureButton.setOnClickListener( new View.OnClickListener(){
-                    @Override
-                    public void onClick(View view) {
-                        try{
-                            String iName = inputName.getText().toString();
-                            String iPsw = inputPsw.getText().toString();
-
-                            Log.d(TestLog, "Login  name:" + iName + " psw:" + iPsw);
-
-                            // 合法性审查 通过socket与服务器沟通
-                            new Thread(new LoginThread(iName, iPsw)).start();
-
-                            Log.d(TestLog, "dialog dismiss");
-                            login_dialog.dismiss();
-                        }catch(Exception e){
-                            Log.d(TestLog, "dismiss error:" + e.getMessage());
-                        }
-                    }
-                });
-            }
-        });
-
-
-        // 主界面注册按钮
-        Button registerButton = (Button) findViewById(R.id.tabbutton_regis);
-        registerButton.setVisibility(View.INVISIBLE);
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.d(TestLog, "Sign up");
-
-                // 注册弹窗
-                AlertDialog.Builder register_builder = new AlertDialog.Builder(MainActivity.this);
-                LayoutInflater factory = LayoutInflater.from(MainActivity.this);
-                final View registerView = factory.inflate(R.layout.activity_register, null);
-
-                final EditText inputName = (EditText) registerView.findViewById(R.id.register_username);
-                final EditText inputPsw1 = (EditText) registerView.findViewById(R.id.register_password);
-                final EditText inputPsw2 = (EditText) registerView.findViewById(R.id.register_password_repeat);
-
-                final Button sureButton = (Button) registerView.findViewById(R.id.register_button);
-
-                Log.d(TestLog, "init login var");
-
-                inputName.setHint("请输入用户名");
-                inputPsw1.setHint("请输入密码");
-                inputPsw2.setHint("请确认密码");
-
-                Log.d(TestLog, "init hint over");
-
-                register_builder.setTitle("注册");
-                register_builder.setIcon(android.R.drawable.ic_dialog_info);
-                register_builder.setView(registerView);
-
-                // 注册弹窗 - 确定事件绑定
-                final AlertDialog register_dialog = register_builder.show();
-                sureButton.setOnClickListener(new View.OnClickListener(){
-                    @Override
-                    public void onClick(View view) {
-                        // 注册信息确定
-                        String iName = inputName.getText().toString();
-                        String iPsw1 = inputPsw1.getText().toString();
-                        String iPsw2 = inputPsw2.getText().toString();
-                        hasLogin = true;
-
-                        // 通过socket与服务器查询/实现注册
-                        // 查询是否存在/合法性 + 实现及返回结果
-                        Log.d(TestLog, "Register  name:" + iName + " psw:" + iPsw1 + " psw confirm:" + iPsw2);
-                        new Thread(new RegisterThread(iName, iPsw1, iPsw2)).start();
-
-                        register_dialog.dismiss();
-                    }
-                });
-            }
-        });
 
         // 设置服务器地址及端口号
         Button btn_SetPort = (Button)findViewById(R.id.tabbutton_set);
@@ -346,11 +250,11 @@ public class MainActivity extends Activity{
                 Log.d(TestLog, "Send Broadcast");
 
                 String intentact = "";
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
-                    intentact = Intent.ACTION_PICK;
-                } else {//4.4版本后
-                    intentact = Intent.ACTION_GET_CONTENT;
-                }
+//                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
+//                    intentact = Intent.ACTION_PICK;
+//                } else {//4.4版本后
+                intentact = Intent.ACTION_GET_CONTENT;
+//                }
                 Intent intent = new Intent(intentact);
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
                 Log.d(TestLog, "Look the Album");
@@ -419,15 +323,21 @@ public class MainActivity extends Activity{
                     dir.delete();
                 }
                 if(!dir.exists()) {
-                    dir.mkdir();
+                    dir.mkdirs();
                 }
+
                 // 先刷新后选择
                 scanDir(MainActivity.this, dir.getAbsolutePath());
 
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                Uri uri = Uri.fromFile(dir);
-                intent.setData(uri);
-                intent.setType("image/*");
+                String intentact = "";
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
+                    intentact = Intent.ACTION_PICK;
+                } else {//4.4版本后
+                    intentact = Intent.ACTION_GET_CONTENT;
+                }
+                Intent intent = new Intent(intentact);
+                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+
                 startActivityForResult(intent, SENDPICINTENT);
             }
         });
@@ -466,17 +376,22 @@ public class MainActivity extends Activity{
         else if(requestCode == SENDPICINTENT){ // 向服务器上传图片 阶段1：裁剪图片
             Log.d(TestLog, "SEND PIC INTENT 1");
             // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
-            final Uri uri = data.getData();
-
-            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
+            String sendPath = null;
+            Uri uri = data.getData();
+//            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
+//            String sendPath = uri.getPath();
+//            String sendPath = UriDeal.getFilePathFromContentUri(uri, this.getContentResolver());
+            sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
             Log.d(TestLog, "img path " + sendPath);
-            File uploadFile = new File(sendPath);
-
-            if(!uploadFile.exists()) return;
+            if(sendPath == null){
+                Log.d(TestLog, "illegal img path : null");
+                return;
+            }
             // 裁剪图
-            cropPic(sendPath);
-
+            new Thread(new SocketSendGetThread(sendPath)).start();
+//            cropPic(sendPath);
         }
+
         else if(requestCode == CUTPICINTENT) { // 向服务器上传图片 阶段2：真正上传图片
             Log.d(TestLog, "SEND PIC INTENT 2");
             Log.d(TestLog, "img path " + photo.getAbsolutePath());
@@ -507,8 +422,9 @@ public class MainActivity extends Activity{
             }
             scanFile(MainActivity.this, filePath);
             Log.d(TestLog, "UPDATE CUT PIC");
+            Log.d(TestLog, filePath);
             // 发送图片
-            new Thread(new SocketSendGetThread(new File(filePath))).start();
+            new Thread(new SocketSendGetThread(filePath)).start();
         }
     }
 
@@ -586,7 +502,7 @@ public class MainActivity extends Activity{
                 ivImage.setImageBitmap(bitmap);
                 ivImage.setVisibility(View.VISIBLE);
             }
-            else if(msg.what >= 5){
+            else if(msg.what <= 5){
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 String congraText = "";
                 if(msg.what == 1) congraText = "注册成功";
@@ -614,291 +530,63 @@ public class MainActivity extends Activity{
         }
     };
 
-    // 通过Socket实现的 客户端 - 服务器 进行的注册交互
-    public class RegisterThread implements Runnable{
-        private String name;
-        private String psw1;
-        private String psw2;
-
-        public RegisterThread(String name, String psw1, String psw2){
-            Log.d(TestLog, "Register Thread - init");
-            this.name = name;
-            this.psw1 = psw1;
-            this.psw2 = psw2;
-        }
-
+    public class LoggingInterceptor implements Interceptor{
         @Override
-        public void run(){
-            Log.d(TestLog, "Register Thread - run");
-            android.os.Message message = Message.obtain();
-            message.obj = null;
-
-            RequestBody requestBody = new FormBody.Builder()
-                    .add("name", name)
-                    .add("psw", psw1)
-                    .add("submit", "Sign up")
-                    .build();
-            Request request = new Request.Builder()
-                    .url(LocalHost + port + "/signup")
-                    .post(requestBody)
-                    .build();
-            try{
-                Response response = client.newCall(request).execute();
-                if(!response.isSuccessful()) throw new IOException("Unexpected code");
-
-                if(response.body().string().equals("this nickname cannot use")){
-                    Log.d(TestLog, "Register Thread - Same Name!");
-                    // 保存信息
-                    message.what = 2;
-                    handler.sendMessage(message);
-                }
-
-                System.out.println(response.body().string());
-            }catch (Exception e){
-                //System.out.println(requestBody);
-                message.what = 404;
-                handler.sendMessage(message);
-                Log.d(TestLog, "catch error:" + e.getMessage() + requestBody);
-            }
-
-/*            Socket socket;
-
-            // 创建交互handler，用于保存最终结果
-            android.os.Message message = Message.obtain();
-            message.obj = null;
-
-            try {
-                // 创建Socket 指定服务器IP和端口号
-                socket = new Socket(LocalHost, port);
-
-                // 创建Socket的InputStream用来接收数据
-                InputStream inputConnect = socket.getInputStream();
-
-                // 创建Socket的OutputStream用于发送数据
-                OutputStream outputConnect = socket.getOutputStream();
-
-                Log.d(TestLog, "Register Thread - Connect!");
-
-                // 发送指令号
-                outputConnect.write("Register".getBytes());
-                outputConnect.flush();
-
-                Log.d(TestLog, "Register Thread - Sym send");
-
-                // send分隔
-                inputConnect.read(new byte[10]);
-                Log.d(TestLog, "Register Thread - Sym got");
-
-                // 发送用户名
-                outputConnect.write(name.getBytes());
-                outputConnect.flush();
-                Log.d(TestLog, "Register Thread - Name send");
-
-                // 获得用户名查询反馈
-                byte name_confirm[] = new byte[10];
-                int ncCode = inputConnect.read(name_confirm);
-                String ncCodeStr = new String(name_confirm, 0, ncCode);
-                ncCode = Integer.valueOf(ncCodeStr);
-                Log.d(TestLog, "Register Thread - Name confirm got");
-
-                if(ncCode != 0){ // 用户名已存在
-                    Log.d(TestLog, "Register Thread - Same Name!");
-                    // 保存信息
-                    message.what = 0;
-                    handler.sendMessage(message);
-
-                    // 关闭并退出
-                    inputConnect.close();
-                    outputConnect.close();
-                    socket.close();
-                    return;
-                }
-
-                // 用户不存在
-                // 加密用户密码 发送给服务器
-                // do something with psw
-                outputConnect.write(psw1.getBytes());
-                outputConnect.flush();
-                Log.d(TestLog, "Register Thread - Psw send");
-
-                // 接收返回码
-                byte symCodeBuff[] = new byte[200];
-                int symCode = inputConnect.read(symCodeBuff);
-                String symCodeStr = new String(symCodeBuff, 0, symCode);
-                symCode = Integer.valueOf(symCodeStr);
-                Log.d(TestLog, "Register Thread - Psw confirm got");
-
-                // 设置返回信息
-                message.what = symCode;
-                handler.sendMessage(message);
-                Log.d(TestLog, "Register Thread - Return Value is Set");
-
-                inputConnect.close();
-                outputConnect.close();
-                socket.close();
-                Log.d(TestLog, "Register Thread - Finish Success");
-
-            }catch(Exception e) {
-                message.what = 404;
-                handler.sendMessage(message);
-                Log.d(TestLog, "catch error:" + e.getMessage());
-            }
-            */
+        public Response intercept(Chain chain) throws IOException{
+            Request request = chain.request();
+            long t1 = System.nanoTime();
+            Log.d(TestLog, String.format("send %s on %s%n%s", request.url(),
+                    chain.connection(), request.headers()));
+            Response response = chain.proceed(request);
+            long t2 = System.nanoTime();
+            ResponseBody responseBody = response.peekBody(1024 * 1024);
+            Log.d(TestLog, String.format("rec：[%s] %nreturn json:%s  %.1fms%n%s",
+                    response.request().url(),
+                    responseBody.string(),
+                    (t2-t1) /1e6d,
+                    response.headers()
+                    ));
+            return response;
         }
     }
 
-    // 通过Socket实现的 客户端 - 服务器 进行的登录交互
-    public class LoginThread implements Runnable{
-        private String name;
-        private String psw;
-        public LoginThread(String name, String psw){
-            Log.d(TestLog, "Login Thread - init");
-            this.name = name;
-            this.psw = psw;
-        }
-
+    public class HttpLogger implements HttpLoggingInterceptor.Logger {
         @Override
-        public void run(){
-            Log.d(TestLog, "Login Thread - run");
-            android.os.Message message = Message.obtain();
-            message.obj = null;
-
-            RequestBody requestBody = new FormBody.Builder()
-                    .add("name", name)
-                    .add("psw", psw)
-                    .add("submit", "Login")
-                    .build();
-            Request request = new Request.Builder()
-                    .url(LocalHost + port + "/login")
-                    .post(requestBody)
-                    .build();
-            try{
-                Response response = client.newCall(request).execute();
-                if(!response.isSuccessful()) throw new IOException("Unexpected code");
-
-//                Log.d(TestLog, "response " + response.body().string());
-                if(response.body().string().equals("wrong password")){
-                    Log.d(TestLog, "Login Thread - Illegal Name!");
-                    // 保存信息
-                    message.what = 1;
-                    handler.sendMessage(message);
-//                    response.close();
-                    return;
-                }
-                Username = name;
-                Log.d(TestLog, "Login Thread - Finish Success");
-//                System.out.println(requestBody);
-            }catch (IOException e){
-//                System.out.println(requestBody);
-                message.what = 404;
-                handler.sendMessage(message);
-                Log.d(TestLog, "catch error:" + e.getMessage() + request.url());
-            }
-
-/*            Socket socket;
-
-            // 创建交互handler，用于保存最终结果
-            android.os.Message message = Message.obtain();
-            message.obj = null;
-
-            try {
-                // 创建Socket 指定服务器IP和端口号
-                socket = new Socket(LocalHost, port);
-
-                // 创建Socket的InputStream用来接收数据
-                InputStream inputConnect = socket.getInputStream();
-
-                // 创建Socket的OutputStream用于发送数据
-                OutputStream outputConnect = socket.getOutputStream();
-
-                Log.d(TestLog, "Login Thread - Connect!");
-
-                // 发送指令号
-                outputConnect.write("Login".getBytes());
-                outputConnect.flush();
-
-                Log.d(TestLog, "Login Thread - Sym send");
-
-                // send分隔
-                inputConnect.read(new byte[10]);
-                Log.d(TestLog, "Login Thread - Sym got");
-
-                // 发送用户名
-                outputConnect.write(name.getBytes());
-                outputConnect.flush();
-                Log.d(TestLog, "Login Thread - Name send");
-
-                // 获得用户名查询反馈
-                byte name_confirm[] = new byte[10];
-                int ncCode = inputConnect.read(name_confirm);
-                String ncCodeStr = new String(name_confirm, 0, ncCode);
-                ncCode = Integer.valueOf(ncCodeStr);
-                Log.d(TestLog, "Login Thread - Name confirm got");
-
-                if(ncCode != 0){ // 用户名不存在
-                    Log.d(TestLog, "Login Thread - Illegal Name!");
-                    // 保存信息
-                    message.what = 0;
-                    handler.sendMessage(message);
-
-                    // 关闭并退出
-                    inputConnect.close();
-                    outputConnect.close();
-                    socket.close();
-                    return;
-                }
-
-                // 用户存在
-                // 加密用户密码 发送给服务器
-                // do something with psw
-                outputConnect.write(psw.getBytes());
-                outputConnect.flush();
-                Log.d(TestLog, "Login Thread - Psw send");
-
-                // 接收返回码
-                byte symCodeBuff[] = new byte[200];
-                int symCode = inputConnect.read(symCodeBuff);
-                String symCodeStr = new String(symCodeBuff, 0, symCode);
-                symCode = Integer.valueOf(symCodeStr);
-                Log.d(TestLog, "Login Thread - Psw confirm got");
-
-                // 设置返回信息
-                message.what = symCode;
-                handler.sendMessage(message);
-                Log.d(TestLog, "Login Thread - Return Value is Set");
-
-                inputConnect.close();
-                outputConnect.close();
-                socket.close();
-                Log.d(TestLog, "Login Thread - Finish Success");
-
-            }catch(Exception e) {
-                message.what = 404;
-                handler.sendMessage(message);
-                Log.d(TestLog, "catch error:" + e.getMessage());
-            }
-            */
+        public void log(String message) {
+            Log.d("HttpLogInfo", message);//okHttp的详细日志会打印出来
         }
     }
 
     // 通过Socket进行图片收发
     public class SocketSendGetThread implements Runnable{
         private File file;
-        private final MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
-        public SocketSendGetThread(File file) {
-            this.file = file;
+        private String filePath;
+        public SocketSendGetThread(String filePath) {
+            this.filePath = filePath;
         }
         @Override
         public void run() {
+            HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
+            logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            file = new File(filePath);
+            String fileName = file.getName();
             Log.d(TestLog, "OkhttpSendImg");
+            Log.d(TestLog, "filename : " + fileName);
             android.os.Message message = Message.obtain();
             message.obj = null;
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addNetworkInterceptor(logInterceptor)
+                    .build();
+            String fileType = getMimeType(fileName);
+
             RequestBody requestBody = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
 //                    .addFormDataPart("username", Username)
 //                    .addFormDataPart("submit", "Upload")
-                    .addFormDataPart("image", Username, RequestBody.create(MEDIA_TYPE_JPG, file))
+                    .addFormDataPart("file", fileName,
+                            RequestBody.create(MediaType.parse(fileType), file))
                     .build();
+
             Request request = new Request.Builder()
                     .url(LocalHost + port + "/upload")
                     .post(requestBody)
@@ -915,6 +603,11 @@ public class MainActivity extends Activity{
                     handler.sendMessage(message);
 //                    response.close();
                     return;
+                }else{
+                    Log.d(TestLog, "save");
+                    // 保存信息
+                    message.what = 0;
+                    handler.sendMessage(message);
                 }
                 Log.d(TestLog, "Login Thread - Finish Success");
 //                System.out.println(requestBody);
@@ -925,141 +618,15 @@ public class MainActivity extends Activity{
                 Log.d(TestLog, "catch error:" + e.getMessage() + request.url());
             }
             Log.d(TestLog, "catch error:" + requestBody);
-            /*
-            Socket socket;
-            try {
-                // 创建Socket 指定服务器IP和端口号
-                socket = new Socket(LocalHost, port);
+        }
 
-                // 创建InputStream用于读取文件
-                InputStream inputFile = new FileInputStream(file);
-
-                // 创建Socket的InputStream用来接收数据
-                InputStream inputConnect = socket.getInputStream();
-
-                // 创建Socket的OutputStream用于发送数据
-                OutputStream outputConnect = socket.getOutputStream();
-
-                // 发送识别码
-                outputConnect.write("Picture".getBytes());
-                outputConnect.flush();
-
-                // send分隔 div 1
-                inputConnect.read(new byte[10]);
-
-                // 发送文件大小
-                long fileSize = inputFile.available();
-                String fileSizeStr = fileSize + "";
-                outputConnect.write(fileSizeStr.getBytes());
-                outputConnect.flush();
-
-                // send分隔 div 2
-                inputConnect.read(new byte[10]);
-
-                //将本地文件转为byte数组
-                byte buffer[] = new byte[4 * 1024];
-                int tmp = 0;
-                // 循环读取文件
-                while((tmp = inputFile.read(buffer)) != -1) {
-                    outputConnect.write(buffer, 0, tmp);
-                }
-
-                // 发送读取数据到服务端
-                outputConnect.flush();
-
-                // 关闭输入流
-                inputFile.close();
-
-                // 通过socket与RequestURL建立连接，并接受一张图片存到本地
-                Log.d(TestLog, "SocketGetImg");
-
-                // 接收返回码
-                byte symCodeBuff[] = new byte[200];
-                int symCode = inputConnect.read(symCodeBuff);
-                String symCodeStr = new String(symCodeBuff, 0, symCode);
-                symCode = Integer.valueOf(symCodeStr);
-                Log.d(TestLog, "Sym Code is " + symCode);
-
-                // 返回码表明有误
-                if(symCode != 0) {
-                    // 设置返回信息
-                    android.os.Message message = Message.obtain();
-                    message.obj = null;
-                    message.what = symCode;
-                    Log.d(TestLog, "message is ok");
-                    handler.sendMessage(message);
-                    Log.d(TestLog, "handler is ok");
-
-                    inputConnect.close();
-                    outputConnect.close();
-                    socket.close();
-                    return;
-                }
-
-                // 发送分隔符
-                outputConnect.write("BreakTime".getBytes());
-                outputConnect.flush();
-
-                // 定位输出路径
-                File dir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
-                if(dir.exists() && dir.isFile()) {
-                    dir.delete();
-                }
-                if(!dir.exists()) {
-                    dir.mkdir();
-                }
-
-                // 使用时间作为输出
-                Date date = new Date(System.currentTimeMillis());
-                Log.d(TestLog, "break in date");
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-                Log.d(TestLog, "break in sdf");
-                String filePath = dir.getAbsolutePath() + "/Receive_" + dateFormat.format(date) + ".jpg";
-                Log.d(TestLog, "break2");
-                FileOutputStream outputStream = new FileOutputStream(filePath);
-                Log.d(TestLog, "break3");
-
-                // 读取接收文件大小
-                byte piclenBuff[] = new byte[200];
-                int picLen = inputConnect.read(piclenBuff);
-                String picLenStr = new String(piclenBuff, 0, picLen);
-                picLen = Integer.valueOf(picLenStr);
-                Log.d(TestLog, "fileSize is:" + picLen);
-
-                // 发送确认信息
-                outputConnect.write("receive".getBytes());
-                outputConnect.flush();
-
-                // 读取接收文件
-                byte buffer2[] = new byte[picLen];
-                int offset = 0;
-                while(offset < picLen) {
-                    int len = inputConnect.read(buffer2, offset, picLen - offset);
-                    Log.d(TestLog, "" + len);
-                    outputStream.write(buffer2, offset, len);
-                    offset += len;
-                }
-                Log.d(TestLog, "yeah");
-                inputConnect.close();
-                outputStream.close();
-
-                // 关闭连接
-                socket.close();
-                Log.d(TestLog, "Get Img success.The result is " + filePath);
-                if(filePath.equals("")) return;
-                Bitmap bitmap = BitmapFactory.decodeByteArray(buffer2, 0, offset);
-                Log.d(TestLog, "bitmap is ok");
-                android.os.Message message = Message.obtain();
-                message.obj = bitmap;
-                message.what = 0;
-                Log.d(TestLog, "message is ok");
-                handler.sendMessage(message);
-                Log.d(TestLog, "handler is ok");
-
-            }catch(Exception e) {
-                Log.d(TestLog, "catch error:" + e.getMessage());
+        private String getMimeType(String filename) {
+            FileNameMap filenameMap = URLConnection.getFileNameMap();
+            String contentType = filenameMap.getContentTypeFor(filename);
+            if (contentType == null) {
+                contentType = "application/octet-stream"; //* exe,所有的可执行程序
             }
-*/
+            return contentType;
         }
 
     }

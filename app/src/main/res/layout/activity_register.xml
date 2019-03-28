@@ -29,6 +29,8 @@
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
                     android:textSize="@dimen/font_h3"
+                    android:textColor="#e0000000"
+                    android:hint="Username"
                     android:inputType="number"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
@@ -76,6 +78,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
                     android:textSize="15sp"
+                    android:textColor="#e0000000"
                     android:hint="Password (At least 1 letter and 1 number)"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
@@ -90,6 +93,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
                     android:textSize="@dimen/font_h3"
+                    android:textColor="#e0000000"
                     android:hint="Confirm password"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
@@ -145,6 +149,7 @@
                     android:text="@string/register_declaration"
                     />
             </LinearLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -159,6 +164,20 @@
                     android:textColor="@drawable/textcolor_selector"
                     android:text="Register"
                     android:textSize="@dimen/font_h2"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                >
+                <TextView
+                    android:id="@+id/register_to_set"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@drawable/textcolor_selector"
+                    android:layout_centerInParent="true"
+                    android:text="Set the Server/Port"
+                    android:textSize="@dimen/font_h3"/>
             </RelativeLayout>
         </LinearLayout>
     </RelativeLayout>

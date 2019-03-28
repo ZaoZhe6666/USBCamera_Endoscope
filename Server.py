@@ -3,7 +3,7 @@ import os
 
 sk = socket.socket()
 
-sk.bind(("172.27.35.4", 5000))
+sk.bind(("172.24.38.234", 5000))
 sk.listen(5)
 
 while True:
@@ -26,7 +26,7 @@ while True:
 		psw = conn.recv(1024)
 		# 装模作样的实现注册
 		print('Register psw :' + str(psw))
-		conn.send(b'1')
+		conn.send(b'0')
 
 
 	elif order == 'Login':
@@ -38,7 +38,7 @@ while True:
 		psw = conn.recv(1024)
 		# 装模作样的实现登录
 		print('Login psw :' + str(psw))
-		conn.send(b'2')
+		conn.send(b'0')
 	elif order == 'Picture':
 		# 获得文件大小
 		size = conn.recv(1024)

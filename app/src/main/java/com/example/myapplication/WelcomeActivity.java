@@ -22,7 +22,7 @@ public class WelcomeActivity extends Activity {
             public void onClick(View v) {
                 Log.d(TestLog, "Welcome Activity");
                 Intent intent = new Intent();
-                intent.setClass(WelcomeActivity.this, MainActivity.class);
+                intent.setClass(WelcomeActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
             }
