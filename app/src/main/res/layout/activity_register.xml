@@ -31,7 +31,7 @@
                     android:textSize="@dimen/font_h3"
                     android:textColor="#e0000000"
                     android:hint="Username"
-                    android:inputType="number"
+                    android:inputType="text"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
             </LinearLayout><!--

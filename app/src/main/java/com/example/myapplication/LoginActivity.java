@@ -16,9 +16,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class LoginActivity extends Activity{
     private String TestLog = "TestLog";
@@ -198,15 +205,58 @@ public class LoginActivity extends Activity{
     };
 
     // 通过Socket实现的 客户端 - 服务器 进行的登录交互
-    public class LoginThread implements Runnable{
+    public class LoginThread implements Runnable {
         private String name;
         private String psw;
-        public LoginThread(String name, String psw){
+
+        public LoginThread(String name, String psw) {
             Log.d(TestLog, "Login Thread - run");
             this.name = name;
             this.psw = psw;
         }
 
+        @Override
+        public void run() {
+            Log.d(TestLog, "Login Thread - run");
+            android.os.Message message = Message.obtain();
+            message.obj = null;
+            OkHttpClient client = new OkHttpClient();
+
+            RequestBody requestBody = new FormBody.Builder()
+                    .add("name", name)
+                    .add("psw", psw)
+                    .add("submit", "Login")
+                    .build();
+            Request request = new Request.Builder()
+                    .url(MainActivity.LocalHost + MainActivity.port + "/login")
+                    .post(requestBody)
+                    .build();
+            try {
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) throw new IOException("Unexpected code");
+
+//                Log.d(TestLog, "response " + response.body().string());
+                if (response.body().string().equals("wrong password")) {
+                    Log.d(TestLog, "Login Thread - Illegal Name!");
+                    // 保存信息
+                    message.what = 1;
+                    handler.sendMessage(message);
+//                    response.close();
+                    return;
+                }
+                message.what = 0;
+                handler.sendMessage(message);
+                Log.d(TestLog, "Login Thread - Finish Success");
+//                System.out.println(requestBody);
+            } catch (IOException e) {
+//                System.out.println(requestBody);
+                message.what = 404;
+                handler.sendMessage(message);
+                Log.d(TestLog, "catch error:" + e.getMessage() + request.url());
+            }
+        }
+    }
+/*
         @Override
         public void run(){
             Log.d(TestLog, "Login Thread - run");
@@ -294,4 +344,5 @@ public class LoginActivity extends Activity{
             }
         }
     }
+    */
 }

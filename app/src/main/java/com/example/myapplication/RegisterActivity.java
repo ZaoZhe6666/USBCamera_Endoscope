@@ -16,9 +16,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RegisterActivity extends Activity{
     private String TestLog = "TestLog";
@@ -206,7 +213,45 @@ public class RegisterActivity extends Activity{
             this.name = name;
             this.psw1 = psw1;
         }
+        @Override
+        public void run(){
+            OkHttpClient client = new OkHttpClient();
+            Log.d(TestLog, "Register Thread - run");
+            android.os.Message message = Message.obtain();
+            message.obj = null;
 
+            RequestBody requestBody = new FormBody.Builder()
+                    .add("name", name)
+                    .add("psw", psw1)
+                    .add("submit", "Signup")
+                    .build();
+            Request request = new Request.Builder()
+                    .url(MainActivity.LocalHost + MainActivity.port + "/signup")
+                    .post(requestBody)
+                    .build();
+//            Log.d(TestLog, "Register Thread - run");
+            try{
+                Response response = client.newCall(request).execute();
+                if(!response.isSuccessful()) throw new IOException("Unexpected code");
+
+                if(response.body().string().equals("this nickname cannot use")){
+                    Log.d(TestLog, "Register Thread - Same Name!");
+                    // 保存信息
+                    message.what = 1;
+                    handler.sendMessage(message);
+                }
+                message.what = 0;
+                handler.sendMessage(message);
+                Log.d(TestLog, "Sign up Thread - Finish Success");
+            }catch (Exception e){
+                //System.out.println(requestBody);
+                message.what = 404;
+                handler.sendMessage(message);
+                Log.d(TestLog, "catch error:" + e.getMessage() + requestBody);
+            }
+        }
+    }
+/*
         @Override
         public void run() {
             Log.d(TestLog, "Register Thread - run");
@@ -293,5 +338,5 @@ public class RegisterActivity extends Activity{
                 Log.d(TestLog, "catch error:" + e.getMessage());
             }
         }
-    }
+        */
 }
