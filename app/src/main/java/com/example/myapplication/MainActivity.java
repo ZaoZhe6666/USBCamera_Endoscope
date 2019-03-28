@@ -388,8 +388,8 @@ public class MainActivity extends Activity{
                 return;
             }
             // 裁剪图
-            new Thread(new SocketSendGetThread(sendPath)).start();
-//            cropPic(sendPath);
+//            new Thread(new SocketSendGetThread(sendPath)).start();
+            cropPic(sendPath);
         }
 
         else if(requestCode == CUTPICINTENT) { // 向服务器上传图片 阶段2：真正上传图片
@@ -458,38 +458,25 @@ public class MainActivity extends Activity{
      */
 
     private void cropPic(String imagePath) {
-        try {
-            File file = new File(imagePath);
-            Uri contentUri = null;
-            Intent intent = new Intent("com.android.camera.action.CROP");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                contentUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".uriprovider", file);
-                intent.setDataAndType(contentUri, "image/*");
-            } else {
-                intent.setDataAndType(Uri.fromFile(file), "image/*");
-            }
-            intent.putExtra("crop", "true");
-            intent.putExtra("aspectX", 0.1);
-            intent.putExtra("aspectY", 0.1);
-            intent.putExtra("outputX", 150);
-            intent.putExtra("outputY", 150);
-            intent.putExtra("return-data", true);
-            intent.putExtra("scale", true);
-            startActivityForResult(intent, CUTPICINTENT);
-            this.photo = file;
-            if(file == null)
-                Log.d("****" , "file空對象");
-            if(intent == null)
-                Log.d("****" , "intent空對象");
-            if(contentUri == null)
-                Log.d("****" , "contentUri空對象");
-            if(photo == null)
-                Log.d("****" , "photo空對象");
-        }catch (Exception e){
-
+        File file = new File(imagePath);
+        Uri contentUri = null;
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            contentUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".uriprovider", file);
+            intent.setDataAndType(contentUri, "image/*");
+        } else {
+            intent.setDataAndType(Uri.fromFile(file), "image/*");
         }
-
+        intent.putExtra("crop", "true");
+        intent.putExtra("aspectX", 0.1);
+        intent.putExtra("aspectY", 0.1);
+        intent.putExtra("outputX", 150);
+        intent.putExtra("outputY", 150);
+        intent.putExtra("return-data", true);
+        intent.putExtra("scale", true);
+        this.photo = file;
+        startActivityForResult(intent, CUTPICINTENT);
     }
 
     @SuppressLint("HandlerLeak")
