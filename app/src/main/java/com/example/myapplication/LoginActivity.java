@@ -28,6 +28,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class LoginActivity extends Activity{
+    public static String userName = "";
     private String TestLog = "TestLog";
 
     @Override
@@ -244,6 +245,7 @@ public class LoginActivity extends Activity{
 //                    response.close();
                     return;
                 }
+                userName = name;
                 message.what = 0;
                 handler.sendMessage(message);
                 Log.d(TestLog, "Login Thread - Finish Success");

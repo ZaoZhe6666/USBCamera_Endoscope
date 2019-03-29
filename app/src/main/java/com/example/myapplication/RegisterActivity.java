@@ -239,6 +239,7 @@ public class RegisterActivity extends Activity{
                     // 保存信息
                     message.what = 1;
                     handler.sendMessage(message);
+                    return;
                 }
                 message.what = 0;
                 handler.sendMessage(message);

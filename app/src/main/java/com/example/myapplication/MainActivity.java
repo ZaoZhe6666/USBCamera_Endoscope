@@ -88,7 +88,7 @@ public class MainActivity extends Activity{
     private static int NOTLOGIN = 201;
 
     private ImageView ivImage;
-    private String Username = "";
+    private String Username = LoginActivity.userName;
 
     private  void permissionGen(){
         PermissionGen.with(MainActivity.this)
@@ -496,6 +496,10 @@ public class MainActivity extends Activity{
                     congraText = "登陆成功";
                     hasLogin = true;
                 }
+                else if(msg.what == 3) {
+                    congraText = "上传成功";
+                    hasLogin = true;
+                }
                 builder.setTitle("恭喜！") ;
                 builder.setMessage(congraText);
                 builder.setPositiveButton("确定",null );
@@ -569,7 +573,7 @@ public class MainActivity extends Activity{
                     .setType(MultipartBody.FORM)
 //                    .addFormDataPart("username", Username)
 //                    .addFormDataPart("submit", "Upload")
-                    .addFormDataPart("file", fileName,
+                    .addFormDataPart("file", Username + "_" + fileName,
                             RequestBody.create(MediaType.parse(fileType), file))
                     .build();
 
@@ -592,7 +596,7 @@ public class MainActivity extends Activity{
                 }else{
                     Log.d(TestLog, "save");
                     // 保存信息
-                    message.what = 0;
+                    message.what = 3;
                     handler.sendMessage(message);
                 }
                 Log.d(TestLog, "Login Thread - Finish Success");
