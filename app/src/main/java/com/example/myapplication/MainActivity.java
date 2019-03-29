@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.icu.util.Calendar;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -88,7 +89,6 @@ public class MainActivity extends Activity{
     private static int NOTLOGIN = 201;
 
     private ImageView ivImage;
-    private String Username = LoginActivity.userName;
 
     private  void permissionGen(){
         PermissionGen.with(MainActivity.this)
@@ -551,11 +551,16 @@ public class MainActivity extends Activity{
     public class SocketSendGetThread implements Runnable{
         private File file;
         private String filePath;
+        private String Username = LoginActivity.userName;
         public SocketSendGetThread(String filePath) {
             this.filePath = filePath;
         }
         @Override
         public void run() {
+            Calendar calendar = Calendar.getInstance();
+            String date = String.valueOf(calendar.get(Calendar.YEAR)) + "."
+                    + String.valueOf(calendar.get(Calendar.MONTH) + 1) + "."
+                    + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
             HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
             logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             file = new File(filePath);
@@ -573,8 +578,12 @@ public class MainActivity extends Activity{
                     .setType(MultipartBody.FORM)
 //                    .addFormDataPart("username", Username)
 //                    .addFormDataPart("submit", "Upload")
-                    .addFormDataPart("file", Username + "_" + fileName,
+                    .addFormDataPart("file", fileName,
                             RequestBody.create(MediaType.parse(fileType), file))
+                    .addFormDataPart("Username", Username)
+                    .addFormDataPart("Date", date)
+                    .addFormDataPart("Type", fileType)
+                    .addFormDataPart("submit", "Upload")
                     .build();
 
             Request request = new Request.Builder()
