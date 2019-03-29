@@ -167,6 +167,7 @@ public class RegisterActivity extends Activity{
 
     }
 
+    
     // 通过Handler实现报错提示
     @SuppressLint("HandlerLeak")
     public Handler handler = new Handler() {
