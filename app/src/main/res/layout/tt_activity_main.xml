@@ -17,11 +17,11 @@
         android:paddingRight="5dp">
 
         <Button
-            android:id="@+id/tabbutton_login"
+            android:id="@+id/tabbutton_update"
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="5"
-            android:text="登录"
+            android:text="上传"
 
             android:layout_gravity="center"
             android:gravity="center"
@@ -65,16 +65,6 @@
             android:gravity="center"
             />
     </LinearLayout>
-    <Button
-        android:id="@+id/tabbutton_regis"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:layout_weight="5"
-        android:text="注册"
-
-        android:layout_gravity="center"
-        android:gravity="center"
-        />
 
     <View
         android:id="@+id/div_tab_bar"
@@ -101,7 +91,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/bottom_tab_zhenduan"
+        android:id="@+id/bottom_tab_history"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -113,7 +103,7 @@
         android:background="@drawable/zhenduan_circle"
         >
         <ImageView
-            android:id="@+id/img_tab_zhenduan"
+            android:id="@+id/img_tab_history"
             android:layout_width="@dimen/bottom_tab_image_zhenduan"
             android:layout_height="@dimen/bottom_tab_image_zhenduan"
             android:scaleType="centerInside"
@@ -121,13 +111,13 @@
             android:src="@drawable/tab_zhenduan_nor"
             />
         <TextView
-            android:id="@+id/txt_tab_zhenduan"
+            android:id="@+id/txt_tab_history"
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/colorWhite"
             android:textSize="8dp"
-            android:text="上传图像"
+            android:text="检验结果"
             />
     </LinearLayout>
 

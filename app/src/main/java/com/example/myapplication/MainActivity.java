@@ -28,12 +28,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -49,6 +51,9 @@ public class MainActivity extends Activity{
     private static String TestLog = "TestLog";
     private static String YAYA_PATH = "yaya/DCIM/SOAY";
     private static String BACK_PATH = "yaya/DCIM/BACK";
+    private static String BACK_DATA_PATH = "yaya/DCIM/BACK/data";
+    private static String BACK_TMP_PATH = "yaya/DCIM/BACK/data/thumb";
+    private static String BACK_DIAGNO_PATH = "yaya/DCIM/BACK/data/diagno";
 
     public static int port = 5000;
 
@@ -184,23 +189,12 @@ public class MainActivity extends Activity{
                 Log.d(TestLog, "View the Album");
 
                 // 先刷新 后浏览
-                File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH + java.io.File.separator);
-                if(file.exists() && file.isFile()) {
-                    file.delete();
-                }
-                if(!file.exists()) {
-                    file.mkdir();
-                }
+
+                File file = preCreateDir(YAYA_PATH);
 
                 scanDir(MainActivity.this, file.getAbsolutePath());
 
-                File backDir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
-                if(backDir.exists() && backDir.isFile()) {
-                    backDir.delete();
-                }
-                if(!backDir.exists()) {
-                    backDir.mkdir();
-                }
+                File backDir = preCreateDir(BACK_PATH);
                 scanDir(MainActivity.this, backDir.getAbsolutePath());
 
                 Log.d(TestLog, "Send Broadcast");
@@ -270,17 +264,12 @@ public class MainActivity extends Activity{
         });
 
         // 主界面上传图像功能
-        ImageView sendPic = (ImageView) findViewById(R.id.img_tab_zhenduan);
+        Button sendPic = (Button) findViewById(R.id.tabbutton_update);
         sendPic.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
                 //切换至查看已有相册事件
-                File dir = new File(Environment.getExternalStorageDirectory(), YAYA_PATH);
-                if(dir.exists() && dir.isFile()) {
-                    dir.delete();
-                }
-                if(!dir.exists()) {
-                    dir.mkdirs();
-                }
+                File dir = preCreateDir(YAYA_PATH);
 
                 // 先刷新后选择
                 scanDir(MainActivity.this, dir.getAbsolutePath());
@@ -298,6 +287,17 @@ public class MainActivity extends Activity{
             }
         });
 
+        // 查看历史记录功能
+        ImageView checkHistory = (ImageView) findViewById(R.id.img_tab_history);
+        checkHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, CheckHistoryActivity.class);
+                startActivity(intent);
+            }
+        });
+
         // 查看图片完毕
         ImageView imageRecover = (ImageView)findViewById(R.id.ivImage);
         imageRecover.setOnClickListener(new View.OnClickListener() {
@@ -306,8 +306,6 @@ public class MainActivity extends Activity{
                 ivImage.setVisibility(View.INVISIBLE);
             }
         });
-
-
     }
 
 
@@ -426,6 +424,18 @@ public class MainActivity extends Activity{
         intent.putExtra("scale", true);
         this.photo = file;
         startActivityForResult(intent, CUTPICINTENT);
+    }
+
+    private File preCreateDir(String path){
+        File dir = new File(Environment.getExternalStorageDirectory(), path);
+        if(dir.exists() && dir.isFile()) {
+            dir.delete();
+        }
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+        Log.d(TestLog, "pre Create Dir:" + dir.getAbsolutePath());
+        return dir;
     }
 
     @SuppressLint("HandlerLeak")
@@ -550,23 +560,17 @@ public class MainActivity extends Activity{
                 outputConnect.flush();
 
                 // 定位输出路径
-                File dir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
-                if(dir.exists() && dir.isFile()) {
-                    dir.delete();
-                }
-                if(!dir.exists()) {
-                    dir.mkdir();
-                }
+                File dir = preCreateDir(BACK_PATH);
+                File dir_data = preCreateDir(BACK_DATA_PATH);
+                File dir_thumb = preCreateDir(BACK_TMP_PATH);
+                File dir_diagno = preCreateDir(BACK_DIAGNO_PATH);
 
                 // 使用时间作为输出
                 Date date = new Date(System.currentTimeMillis());
-                Log.d(TestLog, "break in date");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-                Log.d(TestLog, "break in sdf");
-                String filePath = dir.getAbsolutePath() + "/Receive_" + dateFormat.format(date) + ".jpg";
-                Log.d(TestLog, "break2");
+                String timePath =  dateFormat.format(date);
+                String filePath = dir.getAbsolutePath() + "/Receive_" + timePath + ".jpg";
                 FileOutputStream outputStream = new FileOutputStream(filePath);
-                Log.d(TestLog, "break3");
 
                 // 读取接收文件大小
                 byte piclenBuff[] = new byte[200];
@@ -596,8 +600,40 @@ public class MainActivity extends Activity{
                 socket.close();
                 Log.d(TestLog, "Get Img success.The result is " + filePath);
                 if(filePath.equals("")) return;
+                // 创建显示用bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(buffer2, 0, offset);
                 Log.d(TestLog, "bitmap is ok");
+
+                // 获取缩略图
+                String thumbPath = dir_thumb.getAbsolutePath() + "/Thumb_" + timePath + ".jpg";
+                BufferedOutputStream buffStream = new BufferedOutputStream(new FileOutputStream(new File(thumbPath)));
+                Bitmap bitmap_thumb = Bitmap.createScaledBitmap(bitmap, 100 , 100, true);
+                bitmap_thumb.compress(Bitmap.CompressFormat.JPEG, 100, buffStream);
+                buffStream.flush();
+                buffStream.close();
+
+                // 存储评价信息
+                // 这一部分暂时没有和服务器方面对接
+                // 需求是:
+                // 评价信息 --存储到--> dir_diagno.getAbsolutePath() + "/Diagno_" + timePath + ".txt"中
+
+                // 存储时间戳信息
+                String historyPath = dir_data.getAbsolutePath() + "/History.txt";
+                File historyFile = new File(historyPath);
+                if(historyFile.exists() && historyFile.isDirectory()){
+                    historyFile.delete();
+                    historyFile.createNewFile();
+                }
+                else if(!historyFile.exists()){
+                    historyFile.createNewFile();
+                }
+
+                FileWriter fw=new FileWriter(historyFile);
+                BufferedWriter bw=new BufferedWriter(fw);
+                bw.write(timePath + "\n");
+                bw.close();
+                fw.close();
+
                 android.os.Message message = Message.obtain();
                 message.obj = bitmap;
                 message.what = 0;
