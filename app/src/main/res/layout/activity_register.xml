@@ -31,43 +31,25 @@
                     android:textSize="@dimen/font_h3"
                     android:textColor="#e0000000"
                     android:hint="Username"
-                    android:inputType="number"
+                    android:inputType="text"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
-            </LinearLayout><!--
+            </LinearLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_marginTop="7dp"
                 android:layout_height="wrap_content">
                 <EditText
-                    android:id="@+id/register_identify_code"
-                    android:layout_centerVertical="true"
-                    android:selectAllOnFocus="true"
-                    android:textSize="@dimen/font_h3"
-                    android:hint="Verification code"
-                    android:inputType="number"
-                    android:background="@drawable/edittext_yuanjiaojuxing"
+                    android:id="@+id/register_email"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <Button
-                    android:id="@+id/register_get_identify_code_button"
-                    android:layout_alignRight="@+id/register_identify_code"
-                    android:layout_centerVertical="true"
-                    android:paddingTop="0dp"
-                    android:paddingBottom="0dp"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/button_selector_white_background_blue_border_get_identify_code"
-                    android:textColor="@color/colorWhite"
-                    android:text="Send code"
-                    android:textSize="@dimen/font_h2"
-                    android:scaleX="0.6"
-                    android:scaleY="0.6"
+                    android:inputType="textEmailAddress"
+                    android:textSize="15sp"
+                    android:textColor="#e0000000"
+                    android:hint="email address"
+                    android:background="@drawable/edittext_yuanjiaojuxing"
                     />
-            </RelativeLayout>-->
+            </RelativeLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_marginTop="7dp"

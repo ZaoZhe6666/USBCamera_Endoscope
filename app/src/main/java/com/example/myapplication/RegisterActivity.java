@@ -16,9 +16,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RegisterActivity extends Activity{
     private String TestLog = "TestLog";
@@ -31,6 +38,7 @@ public class RegisterActivity extends Activity{
 
 
         EditText inputName = (EditText) findViewById(R.id.register_username);
+        EditText inputEmail = (EditText) findViewById(R.id.register_email);
         EditText inputPsw = (EditText) findViewById(R.id.register_password);
         EditText inputPswRe = (EditText) findViewById(R.id.register_password_repeat);
 
@@ -45,8 +53,10 @@ public class RegisterActivity extends Activity{
                 String iName = inputName.getText().toString();
                 String iPsw = inputPsw.getText().toString();
                 String iPsw2 = inputPswRe.getText().toString();
+                String email = inputEmail.getText().toString();
 
-                Log.d(TestLog, "Register  name:" + iName + " psw:" + iPsw + " psw2:" + iPsw2);
+                Log.d(TestLog, "Register  name:" + iName + " psw:" + iPsw
+                        + " psw2:" + iPsw2 + " email:" + email);
                 if(!iPsw.equals(iPsw2)){
                     android.os.Message message = Message.obtain();
                     message.obj = null;
@@ -54,7 +64,23 @@ public class RegisterActivity extends Activity{
                     handler.sendMessage(message);
                     return;
                 }
-                new Thread(new RegisterThread(iName, iPsw)).start();
+                if (!iPsw.equals("")&&!iName.equals("")&&!email.equals("")){
+                    new Thread(new RegisterThread(iName, iPsw, email)).start();
+                }
+                else if(iPsw.equals("")){
+                    android.os.Message message = Message.obtain();
+                    message.obj = null;
+                    message.what = 3;
+                    handler.sendMessage(message);
+                    return;
+                }
+                else{
+                    android.os.Message message = Message.obtain();
+                    message.obj = null;
+                    message.what = 4;
+                    handler.sendMessage(message);
+                    return;
+                }
             }
         });
 
@@ -160,6 +186,7 @@ public class RegisterActivity extends Activity{
 
     }
 
+
     // 通过Handler实现报错提示
     @SuppressLint("HandlerLeak")
     public Handler handler = new Handler() {
@@ -188,6 +215,8 @@ public class RegisterActivity extends Activity{
                 if(msg.what == 1) errorText = "用户名已存在";
                 else if(msg.what == 2) errorText = "两次密码不同";
                 else if(msg.what == 3) errorText = "密码过长/过短";
+                else if(msg.what == 4) errorText = "用户名或邮箱不能为空";
+                else if(msg.what == 5) errorText = "邮箱已被注册";
                 else if(msg.what == 404) errorText = "与服务器" + MainActivity.LocalHost + ":" + MainActivity.port + "连接失败";
                 builder.setMessage(errorText);
                 builder.setPositiveButton("确定",null );
@@ -200,13 +229,64 @@ public class RegisterActivity extends Activity{
     public class RegisterThread implements Runnable {
         private String name;
         private String psw1;
+        private String email;
+        private String responseText;
 
-        public RegisterThread(String name, String psw1) {
+        public RegisterThread(String name, String psw1, String email) {
             Log.d(TestLog, "Register Thread - init");
             this.name = name;
             this.psw1 = psw1;
+            this.email = email;
         }
+        @Override
+        public void run(){
+            OkHttpClient client = new OkHttpClient();
+            Log.d(TestLog, "Register Thread - run");
+            android.os.Message message = Message.obtain();
+            message.obj = null;
 
+            RequestBody requestBody = new FormBody.Builder()
+                    .add("name", name)
+                    .add("psw", psw1)
+                    .add("email", email)
+                    .add("submit", "Signup")
+                    .build();
+            Request request = new Request.Builder()
+                    .url(MainActivity.LocalHost + MainActivity.port + "/signup")
+                    .post(requestBody)
+                    .build();
+//            Log.d(TestLog, "Register Thread - run");
+            try{
+                Response response = client.newCall(request).execute();
+                if(!response.isSuccessful()) throw new IOException("Unexpected code");
+                responseText = response.body().string();
+                if(responseText.equals("this nickname cannot use")){
+                    Log.d(TestLog, "Register Thread - Same Name!");
+                    // 保存信息
+                    message.what = 1;
+                    handler.sendMessage(message);
+                    return;
+                }
+                if(responseText.equals("this email cannot use")){
+                    Log.d(TestLog, "Register Thread - Same Email!");
+                    // 保存信息
+                    message.what = 5;
+                    handler.sendMessage(message);
+                    return;
+                }
+                message.what = 0;
+                LoginActivity.userName = name;
+                handler.sendMessage(message);
+                Log.d(TestLog, "Sign up Thread - Finish Success");
+            }catch (Exception e){
+                //System.out.println(requestBody);
+                message.what = 404;
+                handler.sendMessage(message);
+                Log.d(TestLog, "catch error:" + e.getMessage() + requestBody);
+            }
+        }
+    }
+/*
         @Override
         public void run() {
             Log.d(TestLog, "Register Thread - run");
@@ -293,5 +373,5 @@ public class RegisterActivity extends Activity{
                 Log.d(TestLog, "catch error:" + e.getMessage());
             }
         }
-    }
+        */
 }

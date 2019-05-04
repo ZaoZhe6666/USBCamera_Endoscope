@@ -1,16 +1,19 @@
 package com.example.myapplication;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.icu.util.Calendar;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -18,7 +21,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +31,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.yalantis.ucrop.UCrop;
+import com.yalantis.ucrop.UCropActivity;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -35,19 +44,44 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+<<<<<<< HEAD
 import java.io.FileWriter;
+=======
+import java.io.IOException;
+>>>>>>> f22204a24a90ce8d6f82fae3d277281ca59d1dd8
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.FileNameMap;
 import java.net.Socket;
 import java.net.URI;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import kr.co.namee.permissiongen.PermissionFail;
+import kr.co.namee.permissiongen.PermissionGen;
+import kr.co.namee.permissiongen.PermissionSuccess;
+import okhttp3.FormBody;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
 
 
 @SuppressLint("NewApi")
 public class MainActivity extends Activity{
-    public static String LocalHost = "172.24.38.234";
+    public static String LocalHost = "http://192.168.25.220:";
     private static String TestLog = "TestLog";
     private static String YAYA_PATH = "yaya/DCIM/SOAY";
     private static String BACK_PATH = "yaya/DCIM/BACK";
@@ -71,11 +105,33 @@ public class MainActivity extends Activity{
     private static int NOTLOGIN = 201;
 
     private ImageView ivImage;
+    //private String IMAGE_FILE_LOCATION = "";
+    //private Uri resultUri = Uri.parse(IMAGE_FILE_LOCATION);
+
+    private  void permissionGen(){
+        PermissionGen.with(MainActivity.this)
+                .addRequestCode(200)
+                .permissions(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .request();
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+        PermissionGen.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
+    }
+    @PermissionSuccess(requestCode = 200)
+    public void doSomething(){
+        Toast.makeText(this, "成功", Toast.LENGTH_SHORT).show();
+    }
+    @PermissionFail(requestCode = 200)
+    public void doFailSomething(){
+        Toast.makeText(this, "失败", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tt_activity_main);
+        permissionGen();
 
         hasLogin = false;
         ivImage = (ImageView) findViewById(R.id.ivImage);
@@ -200,11 +256,11 @@ public class MainActivity extends Activity{
                 Log.d(TestLog, "Send Broadcast");
 
                 String intentact = "";
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
-                    intentact = Intent.ACTION_PICK;
-                } else {//4.4版本后
-                    intentact = Intent.ACTION_GET_CONTENT;
-                }
+//                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
+//                    intentact = Intent.ACTION_PICK;
+//                } else {//4.4版本后
+                intentact = Intent.ACTION_GET_CONTENT;
+//                }
                 Intent intent = new Intent(intentact);
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
                 Log.d(TestLog, "Look the Album");
@@ -310,6 +366,7 @@ public class MainActivity extends Activity{
 
 
     protected void onActivityResult(int requestCode, int result, Intent data) {
+
         Log.d(TestLog, "requeseCode = " + requestCode);
         if(requestCode == TAKECAMERA){
             // 拍照功能已改为调用已有YaYa APP对应功能
@@ -330,15 +387,21 @@ public class MainActivity extends Activity{
         else if(requestCode == SENDPICINTENT){ // 向服务器上传图片 阶段1：裁剪图片
             Log.d(TestLog, "SEND PIC INTENT 1");
             // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
+            String sendPath = null;
             Uri uri = data.getData();
 //            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
 //            String sendPath = uri.getPath();
-            String sendPath = UriDeal.getFilePathFromContentUri(uri, this.getContentResolver());
+//            String sendPath = UriDeal.getFilePathFromContentUri(uri, this.getContentResolver());
+            sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
             Log.d(TestLog, "img path " + sendPath);
             if(sendPath == null){
                 Log.d(TestLog, "illegal img path : null");
                 return;
             }
+            //IMAGE_FILE_LOCATION = sendPath + "_result.jpg";
+            //resultUri = Uri.parse(IMAGE_FILE_LOCATION);
+            // 裁剪图
+//            new Thread(new SocketSendGetThread(sendPath)).start();
             cropPic(sendPath);
         }
 
@@ -346,9 +409,26 @@ public class MainActivity extends Activity{
             Log.d(TestLog, "SEND PIC INTENT 2");
             Log.d(TestLog, "img path " + photo.getAbsolutePath());
             String filePath = photo.getAbsolutePath();
-
+//           Uri resultUri = UCrop.getOutput(data);
+//            Log.d(TestLog, "uCrop result: " + resultUri.toString());
+//            String filePath = resultUri.toString();
             // 保存截取图片
+/*
+            Log.d(TestLog, "result: " + resultUri);
+            if(resultUri != null){
+                Bitmap bitmap = null;
+                try{
+                    bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(resultUri));
+                }catch(FileNotFoundException e){
+                    e.printStackTrace();
+                }
+                ivImage.setImageBitmap(bitmap);
+                ivImage.setVisibility(View.VISIBLE);
+            }
+*/
+
             if (data != null) {
+                Log.d(TestLog, "data not null");
                 Bitmap bitmap = data.getExtras().getParcelable("data");
                 ivImage.setImageBitmap(bitmap);
                 ivImage.setVisibility(View.VISIBLE);
@@ -369,11 +449,14 @@ public class MainActivity extends Activity{
                 } catch (Exception e) {
                     Log.d(TestLog, "ERROR IN SAVE CUT PIC:" + e.getMessage());
                 }
+
             }
+
             scanFile(MainActivity.this, filePath);
             Log.d(TestLog, "UPDATE CUT PIC");
+            Log.d(TestLog, filePath);
             // 发送图片
-            new Thread(new SocketSendGetThread(new File(filePath))).start();
+            new Thread(new SocketSendGetThread(filePath)).start();
         }
     }
 
@@ -405,25 +488,67 @@ public class MainActivity extends Activity{
      * 跳转到系统裁剪图片页面
      * @param imagePath 需要裁剪的图片路径
      */
+
     private void cropPic(String imagePath) {
+        Log.d(TestLog, "imagePath: " + imagePath);
         File file = new File(imagePath);
+/*
+        File out = new File(imagePath);
+
+        Uri contentUri = null;
+        contentUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".uriprovider", file);
+        File outDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            if (!outDir.exists()) {
+                outDir.mkdirs();
+            }
+        String outFile = contentUri.toString() + "_result.jpg";
+
+        Uri destinationUri = Uri.parse(outFile);
+        Log.d(TestLog, "content: " + contentUri);
+        Log.d(TestLog, "destination: " + destinationUri);
+        UCrop uCrop = UCrop.of(contentUri, destinationUri);
+
+        UCrop.Options options = new UCrop.Options();
+        options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
+        options.setAllowedGestures(UCropActivity.NONE, UCropActivity.ROTATE, UCropActivity.ALL);
+        options.setHideBottomControls(true);
+        options.setToolbarColor(ActivityCompat.getColor(this, R.color.colorPrimary));
+        options.setStatusBarColor(ActivityCompat.getColor(this, R.color.colorPrimary));
+        options.setFreeStyleCropEnabled(false);
+        options.setCompressionQuality(100);
+        options.setShowCropFrame(true);
+
+
+        uCrop.withOptions(options);
+        uCrop = uCrop.withAspectRatio(700,700);
+        uCrop = uCrop.withMaxResultSize(700, 700);
+        uCrop.start(MainActivity.this, CUTPICINTENT);
+*/
+        Uri contentUri = null;
+        contentUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".uriprovider", file);
         Intent intent = new Intent("com.android.camera.action.CROP");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            Uri contentUri = FileProvider.getUriForFile(this, "console.live.camera.fileprovider", file);
+            contentUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".uriprovider", file);
             intent.setDataAndType(contentUri, "image/*");
         } else {
             intent.setDataAndType(Uri.fromFile(file), "image/*");
         }
+        Log.d(TestLog, "SEND PIC INTENT 1");
         intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 0.1);
-        intent.putExtra("aspectY", 0.1);
-        intent.putExtra("outputX", 150);
-        intent.putExtra("outputY", 150);
-        intent.putExtra("return-data", true);
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+        intent.putExtra("outputX", 700);
+        intent.putExtra("outputY", 700);
         intent.putExtra("scale", true);
+        intent.putExtra("return-data", true);
+        //intent.putExtra("noFaceDetection",true);
+        //intent.putExtra(MediaStore.EXTRA_OUTPUT, resultUri);
+        //intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
         this.photo = file;
+
         startActivityForResult(intent, CUTPICINTENT);
+
     }
 
     private File preCreateDir(String path){
@@ -456,6 +581,10 @@ public class MainActivity extends Activity{
                     congraText = "登陆成功";
                     hasLogin = true;
                 }
+                else if(msg.what == 3) {
+                    congraText = "上传成功, 正在分析";
+                    hasLogin = true;
+                }
                 builder.setTitle("恭喜！") ;
                 builder.setMessage(congraText);
                 builder.setPositiveButton("确定",null );
@@ -476,85 +605,113 @@ public class MainActivity extends Activity{
         }
     };
 
+    public class LoggingInterceptor implements Interceptor{
+        @Override
+        public Response intercept(Chain chain) throws IOException{
+            Request request = chain.request();
+            long t1 = System.nanoTime();
+            Log.d(TestLog, String.format("send %s on %s%n%s", request.url(),
+                    chain.connection(), request.headers()));
+            Response response = chain.proceed(request);
+            long t2 = System.nanoTime();
+            ResponseBody responseBody = response.peekBody(1024 * 1024);
+            Log.d(TestLog, String.format("rec：[%s] %nreturn json:%s  %.1fms%n%s",
+                    response.request().url(),
+                    responseBody.string(),
+                    (t2-t1) /1e6d,
+                    response.headers()
+                    ));
+            return response;
+        }
+    }
+
+    public class HttpLogger implements HttpLoggingInterceptor.Logger {
+        @Override
+        public void log(String message) {
+            Log.d("HttpLogInfo", message);//okHttp的详细日志会打印出来
+        }
+    }
+
     // 通过Socket进行图片收发
     public class SocketSendGetThread implements Runnable{
         private File file;
-        public SocketSendGetThread(File file) {
-            this.file = file;
+        private String filePath;
+        private String resultPath;
+        private String Username = LoginActivity.userName;
+        public SocketSendGetThread(String filePath) {
+            this.filePath = filePath;
         }
         @Override
         public void run() {
-            Log.d(TestLog, "SocketSendImg");
-            Socket socket;
-            try {
-                // 创建Socket 指定服务器IP和端口号
-                socket = new Socket(LocalHost, port);
+            Calendar calendar = Calendar.getInstance();
+            String date = String.valueOf(calendar.get(Calendar.YEAR)) + "."
+                    + String.valueOf(calendar.get(Calendar.MONTH) + 1) + "."
+                    + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+            HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
+            logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            file = new File(filePath);
+            resultPath = filePath + "_result.jpg";
+            String fileName = file.getName();
+            Log.d(TestLog, "OkhttpSendImg");
+            Log.d(TestLog, "filename : " + fileName);
+            android.os.Message message = Message.obtain();
+            message.obj = null;
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .callTimeout(25, TimeUnit.SECONDS)
+                    .connectTimeout(25, TimeUnit.SECONDS)
+                    .readTimeout(25, TimeUnit.SECONDS)
+                    .writeTimeout(25, TimeUnit.SECONDS)
+                    .addNetworkInterceptor(logInterceptor)
+                    .build();
+            String fileType = getMimeType(fileName);
 
-                // 创建InputStream用于读取文件
-                InputStream inputFile = new FileInputStream(file);
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+//                    .addFormDataPart("username", Username)
+//                    .addFormDataPart("submit", "Upload")
+                    .addFormDataPart("file", fileName,
+                            RequestBody.create(MediaType.parse(fileType), file))
+                    .addFormDataPart("Username", Username)
+                    .addFormDataPart("Date", date)
+                    .addFormDataPart("Type", fileType)
+                    .addFormDataPart("submit", "Upload")
+                    .build();
 
-                // 创建Socket的InputStream用来接收数据
-                InputStream inputConnect = socket.getInputStream();
+            Request request = new Request.Builder()
+                    .url(LocalHost + port + "/upload")
+                    .post(requestBody)
+                    .build();
+            try{
+                Response response = client.newCall(request).execute();
+                if(!response.isSuccessful()) throw new IOException("Unexpected code");
 
-                // 创建Socket的OutputStream用于发送数据
-                OutputStream outputConnect = socket.getOutputStream();
-
-                // 发送识别码
-                outputConnect.write("Picture".getBytes());
-                outputConnect.flush();
-
-                // send分隔 div 1
-                inputConnect.read(new byte[10]);
-
-                // 发送文件大小
-                long fileSize = inputFile.available();
-                String fileSizeStr = fileSize + "";
-                outputConnect.write(fileSizeStr.getBytes());
-                outputConnect.flush();
-
-                // send分隔 div 2
-                inputConnect.read(new byte[10]);
-
-                //将本地文件转为byte数组
-                byte buffer[] = new byte[4 * 1024];
-                int tmp = 0;
-                // 循环读取文件
-                while((tmp = inputFile.read(buffer)) != -1) {
-                    outputConnect.write(buffer, 0, tmp);
-                }
-
-                // 发送读取数据到服务端
-                outputConnect.flush();
-
-                // 关闭输入流
-                inputFile.close();
-
-                // 通过socket与RequestURL建立连接，并接受一张图片存到本地
-                Log.d(TestLog, "SocketGetImg");
-
-                // 接收返回码
-                byte symCodeBuff[] = new byte[200];
-                int symCode = inputConnect.read(symCodeBuff);
-                String symCodeStr = new String(symCodeBuff, 0, symCode);
-                symCode = Integer.valueOf(symCodeStr);
-                Log.d(TestLog, "Sym Code is " + symCode);
-
-                // 返回码表明有误
-                if(symCode != 0) {
-                    // 设置返回信息
-                    android.os.Message message = Message.obtain();
-                    message.obj = null;
-                    message.what = symCode;
-                    Log.d(TestLog, "message is ok");
+//                Log.d(TestLog, "response " + response.body().string());
+                ResponseBody body = response.body();
+                long contentLength = body.contentLength();
+                Log.d(TestLog, "contentLength" + String.valueOf(contentLength));
+                if(contentLength <= 25){
+                    Log.d(TestLog, "Login Thread - Illegal type!");
+                    // 保存信息
+                    message.what = 1;
                     handler.sendMessage(message);
-                    Log.d(TestLog, "handler is ok");
-
-                    inputConnect.close();
-                    outputConnect.close();
-                    socket.close();
+//                    response.close();
+                    return;
+                }else{
+                    Log.d(TestLog, "save");
+                    // 保存信息
+                    BufferedSource source = body.source();
+                    File resultFile = new File(resultPath);
+                    BufferedSink sink = Okio.buffer(Okio.sink(resultFile));
+                    sink.writeAll(source);
+                    sink.flush();
+                    Log.d(TestLog, "resultpath : " + resultPath);
+                    message.what = 3;
+                    handler.sendMessage(message);
+                    Log.d(TestLog, "Login Thread - Finish Success");
                     return;
                 }
 
+<<<<<<< HEAD
                 // 发送分隔符
                 outputConnect.write("BreakTime".getBytes());
                 outputConnect.flush();
@@ -638,17 +795,40 @@ public class MainActivity extends Activity{
                 message.obj = bitmap;
                 message.what = 0;
                 Log.d(TestLog, "message is ok");
+=======
+//                System.out.println(requestBody);
+            }catch (IOException e){
+//                System.out.println(requestBody);
+                message.what = 404;
+>>>>>>> f22204a24a90ce8d6f82fae3d277281ca59d1dd8
                 handler.sendMessage(message);
-                Log.d(TestLog, "handler is ok");
-
-            }catch(Exception e) {
-                Log.d(TestLog, "catch error:" + e.getMessage());
+                Log.d(TestLog, "catch error:" + e.getMessage() + request.url());
             }
+        }
 
+        private String getMimeType(String filename) {
+            FileNameMap filenameMap = URLConnection.getFileNameMap();
+            String contentType = filenameMap.getContentTypeFor(filename);
+            if (contentType == null) {
+                contentType = "application/octet-stream"; //* exe,所有的可执行程序
+            }
+            return contentType;
         }
 
     }
-
+/*
+    public class OkhttpGetThread implements Runnable{
+        private String resultPath;
+        public OkhttpGetThread(String resultPath){
+            this.resultPath = resultPath;
+        }
+        @Override
+        public void run() {
+            HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor(new HttpLogger());
+            logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        }
+    }
+    */
     // 文件刷新
     public static void scanFile(Context context, String filePath) {
         Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
