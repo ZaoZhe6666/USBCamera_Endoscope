@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -60,6 +61,10 @@ public class MainActivity extends Activity{
     private static String TestLog = "TestLog";
     private static String YAYA_PATH = "yaya/DCIM/SOAY";
     private static String BACK_PATH = "yaya/DCIM/BACK";
+
+    private static String BACK_DATA_PATH = "yaya/DCIM/BACK/data";
+    private static String BACK_TMP_PATH = "yaya/DCIM/BACK/data/thumb";
+    private static String BACK_DIAGNO_PATH = "yaya/DCIM/BACK/data/diagno";
 
     public static int port = 5000;
 
@@ -217,23 +222,27 @@ public class MainActivity extends Activity{
                 Log.d(TestLog, "View the Album");
 
                 // 先刷新 后浏览
-                File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH + java.io.File.separator);
+/*                File file = new File(Environment.getExternalStorageDirectory(), YAYA_PATH + java.io.File.separator);
                 if(file.exists() && file.isFile()) {
                     file.delete();
                 }
                 if(!file.exists()) {
                     file.mkdir();
                 }
+*/
+                File file = preCreateDir(YAYA_PATH);
 
                 scanDir(MainActivity.this, file.getAbsolutePath());
 
-                File backDir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
+/*                File backDir = new File(Environment.getExternalStorageDirectory(), BACK_PATH);
                 if(backDir.exists() && backDir.isFile()) {
                     backDir.delete();
                 }
                 if(!backDir.exists()) {
                     backDir.mkdir();
                 }
+                */
+                File backDir = preCreateDir(BACK_PATH);
                 scanDir(MainActivity.this, backDir.getAbsolutePath());
 
                 Log.d(TestLog, "Send Broadcast");
@@ -305,16 +314,18 @@ public class MainActivity extends Activity{
         // 主界面上传图像功能
         Button sendPic = (Button) findViewById(R.id.tabbutton_update);
         sendPic.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
                 //切换至查看已有相册事件
-                File dir = new File(Environment.getExternalStorageDirectory(), YAYA_PATH);
+/*                File dir = new File(Environment.getExternalStorageDirectory(), YAYA_PATH);
                 if(dir.exists() && dir.isFile()) {
                     dir.delete();
                 }
                 if(!dir.exists()) {
                     dir.mkdirs();
                 }
-
+*/
+                File dir = preCreateDir(YAYA_PATH);
                 // 先刷新后选择
                 scanDir(MainActivity.this, dir.getAbsolutePath());
 
@@ -330,7 +341,16 @@ public class MainActivity extends Activity{
                 startActivityForResult(intent, SENDPICINTENT);
             }
         });
-
+        // 查看历史记录功能
+        ImageView checkHistory = (ImageView) findViewById(R.id.img_tab_history);
+        checkHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, CheckHistoryActivity.class);
+                startActivity(intent);
+            }
+        });
         // 查看图片完毕
         ImageView imageRecover = (ImageView)findViewById(R.id.ivImage);
         imageRecover.setOnClickListener(new View.OnClickListener() {
@@ -339,8 +359,6 @@ public class MainActivity extends Activity{
                 ivImage.setVisibility(View.INVISIBLE);
             }
         });
-
-
     }
 
 
@@ -552,6 +570,19 @@ public class MainActivity extends Activity{
         //startActivityForResult(intent, CUTPICINTENT);
 
     }
+
+    private File preCreateDir(String path){
+        File dir = new File(Environment.getExternalStorageDirectory(), path);
+        if(dir.exists() && dir.isFile()) {
+            dir.delete();
+        }
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+        Log.d(TestLog, "pre Create Dir:" + dir.getAbsolutePath());
+        return dir;
+    }
+
 
     @SuppressLint("HandlerLeak")
     public Handler handler = new Handler() {

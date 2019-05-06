@@ -43,6 +43,7 @@
         <activity android:name=".RegisterActivity"></activity>
         <activity android:name=".CameraActivity"></activity>
         <activity android:name=".MainActivity"></activity>
+        <activity android:name=".CheckHistoryActivity"></activity>
         <provider
             android:authorities="${applicationId}.uriprovider"
             android:name="androidx.core.content.FileProvider"
