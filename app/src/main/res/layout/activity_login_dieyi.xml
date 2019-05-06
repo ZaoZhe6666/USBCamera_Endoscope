@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.example.myapplication.MainActivity">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/id_toolbar"
         android:layout_width="match_parent"
         android:background="?attr/colorPrimary"
@@ -17,7 +17,7 @@
             custom:myTitleText="Login"
             custom:myBackCode="@string/fa_angle_left">
         </com.vrphogame.thyroid.widget.ToolbarViewSimple>
-    </android.support.v7.widget.Toolbar>
+    </androidx.appcompat.widget.Toolbar>
 
     <RelativeLayout
         android:layout_width="match_parent"
