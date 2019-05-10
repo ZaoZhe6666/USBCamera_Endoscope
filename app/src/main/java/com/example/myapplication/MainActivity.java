@@ -768,14 +768,7 @@ public class MainActivity extends Activity{
                     messageR.what = 0;
                     Log.d(TestLog, "message is ok");
 //                    teethResultPath = Uri.fromFile(resultFile);
-
-/*                    Intent intent = new Intent();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        intent.setDataAndType(teethResultPath, "image/*");
-                    }
-                    startActivityForResult(intent, 123);
-                    */
+                    
                 }
 
 //                System.out.println(requestBody);
