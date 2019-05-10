@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Build;
@@ -19,7 +20,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -30,11 +33,21 @@ import android.widget.Toast;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.FileNameMap;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import androidx.core.content.FileProvider;
@@ -50,9 +63,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okio.BufferedSink;
-import okio.BufferedSource;
-import okio.Okio;
 
 
 @SuppressLint("NewApi")
@@ -60,9 +70,9 @@ public class MainActivity extends Activity{
     public static String LocalHost = "http://192.168.25.220:";
     private static String TestLog = "TestLog";
     private static String YAYA_PATH = "yaya/DCIM/SOAY";
-    private static String BACK_PATH = "yaya/DCIM/BACK";
+    public static String BACK_PATH = "yaya/DCIM/BACK";
 
-    private static String BACK_DATA_PATH = "yaya/DCIM/BACK/data";
+    public static String BACK_DATA_PATH = "yaya/DCIM/BACK/data";
     private static String BACK_TMP_PATH = "yaya/DCIM/BACK/data/thumb";
     private static String BACK_DIAGNO_PATH = "yaya/DCIM/BACK/data/diagno";
 
@@ -95,6 +105,23 @@ public class MainActivity extends Activity{
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
         PermissionGen.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
+
+    @Override
+    public void onBackPressed() {
+        Intent launcherIntent = new Intent(Intent.ACTION_MAIN);
+        launcherIntent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(launcherIntent);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            moveTaskToBack(true);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     @PermissionSuccess(requestCode = 200)
     public void doSomething(){
         Toast.makeText(this, "成功", Toast.LENGTH_SHORT).show();
@@ -248,11 +275,11 @@ public class MainActivity extends Activity{
                 Log.d(TestLog, "Send Broadcast");
 
                 String intentact = "";
-//                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
-//                    intentact = Intent.ACTION_PICK;
-//                } else {//4.4版本后
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {//4.4版本前
+                    intentact = Intent.ACTION_PICK;
+                } else {//4.4版本后
                 intentact = Intent.ACTION_GET_CONTENT;
-//                }
+                }
                 Intent intent = new Intent(intentact);
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
                 Log.d(TestLog, "Look the Album");
@@ -465,7 +492,7 @@ public class MainActivity extends Activity{
             sendPhoto.start();
 
         }
-        else if(requestCode == 123){
+        else if(requestCode == 123){ //结果显示？
             ivImage.setImageURI(teethResultPath);
             Log.d(TestLog, "resultUri : " + teethResultPath);
             ivImage.setVisibility(View.VISIBLE);
@@ -727,21 +754,28 @@ public class MainActivity extends Activity{
                 }else{
                     Log.d(TestLog, "save");
                     // 保存信息
-                    BufferedSource source = body.source();
+/*                    BufferedSource source = body.source();
                     File resultFile = new File(resultPath);
                     BufferedSink sink = Okio.buffer(Okio.sink(resultFile));
                     sink.writeAll(source);
                     sink.flush();
                     Log.d(TestLog, "resultpath : " + resultPath);
                     Log.d(TestLog, "Login Thread - Finish Success");
-                    teethResultPath = Uri.fromFile(resultFile);
+*/
+                    Bitmap bitmap = parseJsonWithJsonObject(body);
+                    android.os.Message messageR = Message.obtain();
+                    messageR.obj = bitmap;
+                    messageR.what = 0;
+                    Log.d(TestLog, "message is ok");
+//                    teethResultPath = Uri.fromFile(resultFile);
 
-                    Intent intent = new Intent();
+/*                    Intent intent = new Intent();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         intent.setDataAndType(teethResultPath, "image/*");
                     }
                     startActivityForResult(intent, 123);
+                    */
                 }
 
 //                System.out.println(requestBody);
@@ -760,6 +794,82 @@ public class MainActivity extends Activity{
                 contentType = "application/octet-stream"; //* exe,所有的可执行程序
             }
             return contentType;
+        }
+        private Bitmap parseJsonWithJsonObject(ResponseBody body) throws IOException{
+            String responseData = body.string();
+            try{
+                // 定位输出路径
+                File dir = preCreateDir(BACK_PATH);
+                File dir_data = preCreateDir(BACK_DATA_PATH);
+                File dir_thumb = preCreateDir(BACK_TMP_PATH);
+                File dir_diagno = preCreateDir(BACK_DIAGNO_PATH);
+                // 使用时间作为输出
+                Date date = new Date(System.currentTimeMillis());
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
+                String timePath =  dateFormat.format(date);
+                String filePath = dir.getAbsolutePath() + "/Receive_" + timePath + ".jpg";
+                FileOutputStream outputStream = new FileOutputStream(filePath);
+                //解析json文件
+                JSONObject jsonObject = new JSONObject(responseData);
+                String photoName = jsonObject.getString("name");
+                Log.d(TestLog, "photo name is:" + photoName);
+                String imageBase64String = jsonObject.getString("image_base64_string");
+                String ratio = jsonObject.getString("ratio");
+                //保存图片
+                byte[] buffer = Base64.decode(imageBase64String, Base64.DEFAULT);
+                outputStream.write(buffer);
+                outputStream.close();
+                //创建显示用bitmap
+                Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0, buffer.length);
+                Log.d(TestLog, "bitmap is ok");
+                // 获取缩略图
+                String thumbPath = dir_thumb.getAbsolutePath() + "/Thumb_" + timePath + ".jpg";
+                BufferedOutputStream buffStream = new BufferedOutputStream(new FileOutputStream(new File(thumbPath)));
+                Bitmap bitmap_thumb = Bitmap.createScaledBitmap(bitmap, 100 , 100, true);
+                bitmap_thumb.compress(Bitmap.CompressFormat.JPEG, 100, buffStream);
+                buffStream.flush();
+                buffStream.close();
+                //存储评价信息
+                String diagnoPath = dir_diagno.getAbsolutePath() + "/Diagno_" + timePath + ".txt";
+                File diagnoFile = new File(diagnoPath);
+                if(diagnoFile.exists() && diagnoFile.isDirectory()){
+                    diagnoFile.delete();
+                    diagnoFile.createNewFile();
+                }
+                else if(!diagnoFile.exists()){
+                    diagnoFile.createNewFile();
+                }
+                FileWriter fwd = new FileWriter(diagnoFile);
+                BufferedWriter bwd = new BufferedWriter(fwd);
+                bwd.write( ratio + "%\n");
+                bwd.close();
+                fwd.close();
+                // 存储时间戳信息
+                String historyPath = dir_data.getAbsolutePath() + "/History.txt";
+                File historyFile = new File(historyPath);
+                if(historyFile.exists() && historyFile.isDirectory()){
+                    historyFile.delete();
+                    historyFile.createNewFile();
+                }
+                else if(!historyFile.exists()){
+                    historyFile.createNewFile();
+                }
+                //SimpleDateFormat timeFormat = new SimpleDateFormat("yy-MM-dd hh:mm:ss a E", Locale.getDefault());
+                //String time =  dateFormat.format(date);
+
+                FileWriter fwt=new FileWriter(historyFile, true);
+                BufferedWriter bwt=new BufferedWriter(fwt);
+                bwt.write(timePath + "\n");
+                bwt.close();
+                fwt.close();
+
+                return bitmap;
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Bitmap bitmap = null;
+            return bitmap;
         }
 
     }

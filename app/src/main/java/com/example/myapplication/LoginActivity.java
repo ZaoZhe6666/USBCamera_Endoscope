@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -16,16 +15,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
+
+import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class LoginActivity extends Activity{
     public static String userName = "";
@@ -233,11 +234,13 @@ public class LoginActivity extends Activity{
                     .post(requestBody)
                     .build();
             try {
-                Response response = client.newCall(request).execute();
+                Call call = client.newCall(request);
+                Response response = call.execute();
                 if (!response.isSuccessful()) throw new IOException("Unexpected code");
-
+                ResponseBody body = response.body();
+                String responseData = body.string();
 //                Log.d(TestLog, "response " + response.body().string());
-                if (response.body().string().equals("wrong password")) {
+                if (responseData.equals("wrong password")) {
                     Log.d(TestLog, "Login Thread - Illegal Name!");
                     // 保存信息
                     message.what = 1;
@@ -245,10 +248,20 @@ public class LoginActivity extends Activity{
 //                    response.close();
                     return;
                 }
-                userName = name;
-                message.what = 0;
-                handler.sendMessage(message);
-                Log.d(TestLog, "Login Thread - Finish Success");
+                try {
+                    JSONObject jsonObject = new JSONObject(responseData);
+                    String status = jsonObject.getString("status");
+                    Log.d(TestLog, "status is:" + status);
+                    String token = jsonObject.getString("token");
+                    Log.d(TestLog, "token:" + token);
+                    userName = name;
+                    message.what = 0;
+                    handler.sendMessage(message);
+                    Log.d(TestLog, "Login Thread - Finish Success");
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+
 //                System.out.println(requestBody);
             } catch (IOException e) {
 //                System.out.println(requestBody);

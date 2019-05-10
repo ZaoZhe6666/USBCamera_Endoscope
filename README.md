@@ -43,3 +43,9 @@
 - 增加了本地存储历史记录内容
 - Socket通信更改为OkHttp通信(在其他commit中实现)
 - 添加了业务流程图及存储命名说明
+
+###Version 6.1
+- Socket通信更改为OkHttp通信
+- 修改history-display.xml 优化历史记录显示界面
+- 修改了不能显示上传时间的问题
+- （还改了啥我忘了
