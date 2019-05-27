@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,9 +16,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -252,7 +248,7 @@ public class RegisterActivity extends Activity{
                     .add("submit", "Signup")
                     .build();
             Request request = new Request.Builder()
-                    .url(MainActivity.LocalHost + MainActivity.port + "/signup")
+                    .url(MainActivity.LocalHost + ":" + MainActivity.port + "/signup")
                     .post(requestBody)
                     .build();
 //            Log.d(TestLog, "Register Thread - run");

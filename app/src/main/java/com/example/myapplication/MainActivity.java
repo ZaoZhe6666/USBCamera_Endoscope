@@ -67,9 +67,9 @@ import okhttp3.ResponseBody;
 
 @SuppressLint("NewApi")
 public class MainActivity extends Activity{
-    public static String LocalHost = "http://192.168.25.220:";
+    public static String LocalHost = "http://10.128.78.10";
     private static String TestLog = "TestLog";
-    private static String YAYA_PATH = "yaya/DCIM/SOAY";
+    private static String YAYA_PATH = "DCIM/SOAY";
     public static String BACK_PATH = "yaya/DCIM/BACK";
 
     public static String BACK_DATA_PATH = "yaya/DCIM/BACK/data";
@@ -487,10 +487,11 @@ public class MainActivity extends Activity{
             scanFile(MainActivity.this, cropResultPath);
             Log.d(TestLog, "UPDATE CUT PIC");
             Log.d(TestLog, cropResultPath);
+            //LoadingDialog.getInstance(this).show();
             // 发送图片
             Thread sendPhoto = new Thread(new SocketSendGetThread(cropResultPath));
             sendPhoto.start();
-
+            //LoadingDialog.getInstance(this).dismiss();
         }
         else if(requestCode == 123){ //结果显示？
             ivImage.setImageURI(teethResultPath);
@@ -616,7 +617,7 @@ public class MainActivity extends Activity{
         @Override
         public void handleMessage(android.os.Message msg) {
             if(msg.what == 0) {
-                Log.d(TestLog, "in handle Message!");
+                Log.d(TestLog, "分析结束");
                 Bitmap bitmap = (Bitmap) msg.obj;
                 ivImage.setImageBitmap(bitmap);
                 ivImage.setVisibility(View.VISIBLE);
@@ -730,7 +731,7 @@ public class MainActivity extends Activity{
                     .build();
 
             Request request = new Request.Builder()
-                    .url(LocalHost + port + "/upload")
+                    .url(LocalHost + ":" + port + "/upload")
                     .post(requestBody)
                     .build();
             try{
@@ -747,8 +748,10 @@ public class MainActivity extends Activity{
                 if(contentLength <= 25){
                     Log.d(TestLog, "Login Thread - Illegal type!");
                     // 保存信息
-                    message.what = 1;
-                    handler.sendMessage(message);
+                    android.os.Message messageE = Message.obtain();
+                    messageE.obj = null;
+                    messageE.what = 1;
+                    handler.sendMessage(messageE);
 //                    response.close();
                     return;
                 }else{
@@ -763,19 +766,27 @@ public class MainActivity extends Activity{
                     Log.d(TestLog, "Login Thread - Finish Success");
 */
                     Bitmap bitmap = parseJsonWithJsonObject(body);
+                    android.os.Message messageRW = Message.obtain();
+                    messageRW.obj = null;
+                    messageRW.what = 5;
+                    handler.sendMessage(messageRW);
+                    Log.d(TestLog, "message is ok");
                     android.os.Message messageR = Message.obtain();
                     messageR.obj = bitmap;
                     messageR.what = 0;
+                    handler.sendMessage(messageR);
                     Log.d(TestLog, "message is ok");
 //                    teethResultPath = Uri.fromFile(resultFile);
-                    
+                    return;
                 }
 
 //                System.out.println(requestBody);
             }catch (IOException e){
 //                System.out.println(requestBody);
-                message.what = 404;
-                handler.sendMessage(message);
+                android.os.Message messageError = Message.obtain();
+                messageError.obj = null;
+                messageError.what = 404;
+                handler.sendMessage(messageError);
                 Log.d(TestLog, "catch error:" + e.getMessage() + request.url());
             }
         }

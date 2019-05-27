@@ -125,14 +125,14 @@ public class LoginActivity extends Activity{
                         }
                         String[] parts = iServer.split("\\.");
                         if(parts.length != 4) { // 四段ip设置
-                            return false;
+                            return true;
                         }
                         for(int i = 0; i < 4; i++) {
                             try {
                                 int n = Integer.parseInt(parts[i]);
-                                if(n< 0 || n > 255) return false; // ip数检验
+                                if(n< 0 || n > 255) return true; // ip数检验
                             }catch(NumberFormatException e) {
-                                return false; // 非法字符检验
+                                return true; // 非法字符检验
                             }
                         }
                         return true;
@@ -230,7 +230,7 @@ public class LoginActivity extends Activity{
                     .add("submit", "Login")
                     .build();
             Request request = new Request.Builder()
-                    .url(MainActivity.LocalHost + MainActivity.port + "/login")
+                    .url(MainActivity.LocalHost + ":" + MainActivity.port + "/login")
                     .post(requestBody)
                     .build();
             try {
