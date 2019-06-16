@@ -67,7 +67,7 @@ import okhttp3.ResponseBody;
 
 @SuppressLint("NewApi")
 public class MainActivity extends Activity{
-    public static String LocalHost = "http://10.128.78.10";
+    public static String LocalHost = "http://115.236.52.123";
     private static String TestLog = "TestLog";
     private static String YAYA_PATH = "DCIM/SOAY";
     public static String BACK_PATH = "yaya/DCIM/BACK";
@@ -76,7 +76,7 @@ public class MainActivity extends Activity{
     private static String BACK_TMP_PATH = "yaya/DCIM/BACK/data/thumb";
     private static String BACK_DIAGNO_PATH = "yaya/DCIM/BACK/data/diagno";
 
-    public static int port = 5000;
+    public static int port = 9080;
 
     private boolean isLogin = false;
 
@@ -413,10 +413,11 @@ public class MainActivity extends Activity{
             // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
             String sendPath = null;
             Uri uri = data.getData();
+            Log.d(TestLog, "img uri " + uri);
 //            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
 //            String sendPath = uri.getPath();
 //            String sendPath = UriDeal.getFilePathFromContentUri(uri, this.getContentResolver());
-            sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
+            sendPath = UriDeal.getFilePathByUri(uri, MainActivity.this);
             Log.d(TestLog, "img path " + sendPath);
             if(sendPath == null){
                 Log.d(TestLog, "illegal img path : null");
@@ -601,13 +602,20 @@ public class MainActivity extends Activity{
 
     private File preCreateDir(String path){
         File dir = new File(Environment.getExternalStorageDirectory(), path);
+        Log.d(TestLog, "dir.exists is:" + dir);
         if(dir.exists() && dir.isFile()) {
             dir.delete();
+            Log.d(TestLog, "dir.delete:" + dir);
         }
         if(!dir.exists()) {
-            dir.mkdirs();
+            Log.d(TestLog, "dir.exists");
+            if(dir.mkdirs()) {
+                Log.d(TestLog, "pre Create Dir:" + dir.getAbsolutePath());
+            }
         }
-        Log.d(TestLog, "pre Create Dir:" + dir.getAbsolutePath());
+        else {
+            Log.d(TestLog, "dir.exists");
+        }
         return dir;
     }
 
@@ -812,7 +820,19 @@ public class MainActivity extends Activity{
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
                 String timePath =  dateFormat.format(date);
                 String filePath = dir.getAbsolutePath() + "/Receive_" + timePath + ".jpg";
-                FileOutputStream outputStream = new FileOutputStream(filePath);
+                File outputFile = new File(filePath);
+                Log.d(TestLog, "filepath is: " + filePath);
+                Log.d(TestLog, "iscreate");
+                if(outputFile.exists()){
+                    outputFile.delete();
+                }
+                Log.d(TestLog, "iscreate");
+                boolean iscreate = outputFile.createNewFile();
+                Log.d(TestLog, "iscreate" + iscreate);
+                FileOutputStream outputStream = new FileOutputStream(outputFile);
+                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+
+                Log.d(TestLog, "Receive is ok");
                 //解析json文件
                 JSONObject jsonObject = new JSONObject(responseData);
                 String photoName = jsonObject.getString("name");
@@ -821,7 +841,8 @@ public class MainActivity extends Activity{
                 String ratio = jsonObject.getString("ratio");
                 //保存图片
                 byte[] buffer = Base64.decode(imageBase64String, Base64.DEFAULT);
-                outputStream.write(buffer);
+                bufferedOutputStream.write(buffer);
+                bufferedOutputStream.flush();
                 outputStream.close();
                 //创建显示用bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0, buffer.length);

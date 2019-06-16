@@ -21,6 +21,20 @@ public class UriDeal {
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
         // DocumentProvider
         if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            if (isExternalStorageDocument(uri)) {// ExternalStorageProvider
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+            }
+            else if (isDownloadsDocument(uri)) {// DownloadsProvider
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),
+                        Long.valueOf(id));
+                return getDataColumn(context, contentUri, null, null);
+            }
             final String docId = DocumentsContract.getDocumentId(uri);
             final String[] split = docId.split(":");
             final String type = split[0];
@@ -35,6 +49,14 @@ public class UriDeal {
             final String selection = "_id=?";
             final String[] selectionArgs = new String[] { split[1] };
             return getDataColumn(context, contentUri, selection, selectionArgs);
+        }
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {// MediaStore
+            // (and
+            // general)
+            return getDataColumn(context, uri, null, null);
+        }
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {// File
+            return uri.getPath();
         }
         return null;
     }
@@ -62,7 +84,20 @@ public class UriDeal {
             filePath = uri.getPath();
             return filePath;
         }
-        if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+        if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme()) && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            Cursor cursor = context.getContentResolver().query(uri, new String[]{MediaStore.Images.Media.DATA}, null, null, null);
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                    if (columnIndex > -1) {
+                        filePath = cursor.getString(columnIndex);
+                    }
+                }
+                cursor.close();
+            }
+            return filePath;
+        }
+        else if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (DocumentsContract.isDocumentUri(context, uri)) {
                 if (isExternalStorageDocument(uri)) {
                     // ExternalStorageProvider
@@ -76,10 +111,13 @@ public class UriDeal {
                 } else if (isDownloadsDocument(uri)) {
                     // DownloadsProvider
                     final String id = DocumentsContract.getDocumentId(uri);
-                    final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),
-                            Long.valueOf(id));
-                    filePath = getDataColumn(context, contentUri, null, null);
-                    return filePath;
+                    Log.d(TestLog, "id is: " + id);
+                    //final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),
+                            //Long.valueOf(id));
+                    //filePath = getDataColumn(context, contentUri, null, null);
+                    //return filePath;
+                    String fileId = id.split(":")[1];
+                    return fileId;
                 } else if (isMediaDocument(uri)) {
                     // MediaProvider
                     final String docId = DocumentsContract.getDocumentId(uri);
