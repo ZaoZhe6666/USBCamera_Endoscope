@@ -514,22 +514,28 @@ public class MainActivity extends Activity{
             Log.d(TestLog, "SEND PIC INTENT 1");
             // 查看已有相册图片 -> 建立连接发送图片 -> 接收图片
             String sendPath = null;
-            Uri uri = data.getData();
-            Log.d(TestLog, "img uri " + uri);
+            if(data != null){
+                Uri uri = data.getData();
+                Log.d(TestLog, "img uri " + uri);
+                sendPath = UriDeal.getFilePathByUri(uri, MainActivity.this);
+                Log.d(TestLog, "img path " + sendPath);
+                if(sendPath == null){
+                    Log.d(TestLog, "illegal img path : null");
+                    return;
+                }
+                cropPic(sendPath);
+            }
 //            String sendPath = UriDeal.Uri2Path(MainActivity.this, uri);
 //            String sendPath = uri.getPath();
 //            String sendPath = UriDeal.getFilePathFromContentUri(uri, this.getContentResolver());
-            sendPath = UriDeal.getFilePathByUri(uri, MainActivity.this);
-            Log.d(TestLog, "img path " + sendPath);
-            if(sendPath == null){
-                Log.d(TestLog, "illegal img path : null");
-                return;
+            else{
+                Log.d(TestLog,"*****************123********************");
             }
+
             //IMAGE_FILE_LOCATION = sendPath + "_result.jpg";
             //resultUri = Uri.parse(IMAGE_FILE_LOCATION);
             // 裁剪图
-//            new Thread(new SocketSendGetThread(sendPath)).start();
-            cropPic(sendPath);
+
         }
 
         else if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) { // 向服务器上传图片 阶段2：真正上传图片

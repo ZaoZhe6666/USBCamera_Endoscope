@@ -24,7 +24,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <EditText
+                <!--<EditText
                     android:id="@+id/editText_login_username"
                     android:singleLine="true"
                     android:layout_width="match_parent"
@@ -33,14 +33,27 @@
                     android:textSize="@dimen/font_h3"
                     android:textColor="#e0000000"
                     android:background="@drawable/edittext_yuanjiaojuxing"
+                    />-->
+                <!--pang_fix_20190617-->
+                <EditText
+                    android:id="@+id/editText_login_username"
+                    android:singleLine="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="用户名"
+                    android:selectAllOnFocus="true"
+                    android:textSize="@dimen/font_h3"
+                    android:textColor="#e0000000"
+                    android:background="@drawable/edittext_yuanjiaojuxing"
                     />
+
             </LinearLayout>
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <EditText
+                <!--<EditText
                     android:id="@+id/editText_login_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -49,7 +62,20 @@
                     android:textColor="#e0000000"
                     android:textSize="@dimen/font_h3"
                     android:background="@drawable/edittext_yuanjiaojuxing"
+                    />-->
+                <!--pang_fix_20190617-->
+                <EditText
+                    android:id="@+id/editText_login_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="密码"
+                    android:selectAllOnFocus="true"
+                    android:inputType="textPassword"
+                    android:textColor="#e0000000"
+                    android:textSize="@dimen/font_h3"
+                    android:background="@drawable/edittext_yuanjiaojuxing"
                     />
+
             </LinearLayout>
 
             <RelativeLayout
@@ -57,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 >
-                <Button
+                <!--<Button
                     android:id="@+id/btn_login"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
@@ -65,20 +91,40 @@
                     android:background="@drawable/button_selector_white_background_blue_border"
                     android:textColor="@drawable/textcolor_selector"
                     android:text="Log in"
+                    android:textSize="@dimen/font_h2"/>-->
+                <!--pang_fix_20190617-->
+                <Button
+                    android:id="@+id/btn_login"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/button_selector_white_background_blue_border"
+                    android:textColor="@drawable/textcolor_selector"
+                    android:text="登录"
                     android:textSize="@dimen/font_h2"/>
+
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 >
-                <TextView
+                <!--<TextView
                     android:id="@+id/login_to_set"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@drawable/textcolor_selector"
                     android:layout_centerInParent="true"
                     android:text="Set the Server/Port"
+                    android:textSize="@dimen/font_h3"/>-->
+                <!--pang_fix_20190617-->
+                <TextView
+                    android:id="@+id/login_to_set"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@drawable/textcolor_selector"
+                    android:layout_centerInParent="true"
+                    android:text="设置服务器地址/端口号"
                     android:textSize="@dimen/font_h3"/>
             </RelativeLayout>
             <RelativeLayout
@@ -86,13 +132,22 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 >
-                <TextView
+                <!--<TextView
                     android:id="@+id/view_to_register"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:textColor="@drawable/textcolor_selector"
                     android:text="  Sign up  "
+                    android:textSize="@dimen/font_h3"/>-->
+                <!--pang_fix_20190617-->
+                <TextView
+                    android:id="@+id/view_to_register"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:textColor="@drawable/textcolor_selector"
+                    android:text="  注册  "
                     android:textSize="@dimen/font_h3"/>
             </RelativeLayout>
         </LinearLayout>

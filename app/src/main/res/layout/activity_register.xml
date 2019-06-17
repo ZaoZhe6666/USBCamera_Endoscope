@@ -23,7 +23,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <EditText
+                <!--<EditText
                     android:id="@+id/register_username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -33,13 +33,25 @@
                     android:hint="Username"
                     android:inputType="text"
                     android:background="@drawable/edittext_yuanjiaojuxing"
+                    />-->
+                <!--pang_fix_20190617-->
+                <EditText
+                    android:id="@+id/register_username"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:selectAllOnFocus="true"
+                    android:textSize="@dimen/font_h3"
+                    android:textColor="#e0000000"
+                    android:hint="用户名"
+                    android:inputType="text"
+                    android:background="@drawable/edittext_yuanjiaojuxing"
                     />
             </LinearLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_marginTop="7dp"
                 android:layout_height="wrap_content">
-                <EditText
+                <!--<EditText
                     android:id="@+id/register_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -48,13 +60,24 @@
                     android:textColor="#e0000000"
                     android:hint="email address"
                     android:background="@drawable/edittext_yuanjiaojuxing"
+                    />-->
+                <!--pang_fix_20190617-->
+                <EditText
+                    android:id="@+id/register_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:textSize="15sp"
+                    android:textColor="#e0000000"
+                    android:hint="邮箱地址"
+                    android:background="@drawable/edittext_yuanjiaojuxing"
                     />
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_marginTop="7dp"
                 android:layout_height="wrap_content">
-                <EditText
+                <!--<EditText
                     android:id="@+id/register_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -63,13 +86,24 @@
                     android:textColor="#e0000000"
                     android:hint="Password (At least 1 letter and 1 number)"
                     android:background="@drawable/edittext_yuanjiaojuxing"
+                    />-->
+                <!--pang_fix_20190617-->
+                <EditText
+                    android:id="@+id/register_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:textSize="15sp"
+                    android:textColor="#e0000000"
+                    android:hint="密码（至少包含一个字母和数字）"
+                    android:background="@drawable/edittext_yuanjiaojuxing"
                     />
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_marginTop="10dp"
                 android:layout_height="wrap_content">
-                <EditText
+                <!--<EditText
                     android:id="@+id/register_password_repeat"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -77,6 +111,17 @@
                     android:textSize="@dimen/font_h3"
                     android:textColor="#e0000000"
                     android:hint="Confirm password"
+                    android:background="@drawable/edittext_yuanjiaojuxing"
+                    />-->
+                <!--pang_fix_20190617-->
+                <EditText
+                    android:id="@+id/register_password_repeat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:textSize="@dimen/font_h3"
+                    android:textColor="#e0000000"
+                    android:hint="确认密码"
                     android:background="@drawable/edittext_yuanjiaojuxing"
                     />
             </RelativeLayout>
@@ -108,12 +153,20 @@
                         android:layout_width="wrap_content"
                         android:orientation="horizontal"
                         android:layout_height="wrap_content">
-                        <TextView
+                        <!--<TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="@dimen/font_h4"
                             android:text="@string/register_declaration2"
+                            />-->
+                        <!--pang_fix_20190617-->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/font_h4"
+                            android:text=" 本人已详细阅读用户协议及同意有关条款 "
                             />
+
                     </LinearLayout>
                 </RelativeLayout>
             </LinearLayout>
@@ -123,12 +176,20 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 >
-                <TextView
+                <!--<TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@drawable/textcolor_selector"
                     android:textSize="@dimen/font_h4"
                     android:text="@string/register_declaration"
+                    />-->
+                <!--pang_fix_20190617-->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@drawable/textcolor_selector"
+                    android:textSize="@dimen/font_h4"
+                    android:text="《用户协议》"
                     />
             </LinearLayout>
 
@@ -137,7 +198,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 >
-                <Button
+                <!--<Button
                     android:id="@+id/register_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -145,6 +206,16 @@
                     android:background="@drawable/button_selector_white_background_blue_border"
                     android:textColor="@drawable/textcolor_selector"
                     android:text="Register"
+                    android:textSize="@dimen/font_h2"/>-->
+                <!--pang_fix_20190617-->
+                <Button
+                    android:id="@+id/register_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/button_selector_white_background_blue_border"
+                    android:textColor="@drawable/textcolor_selector"
+                    android:text="注册"
                     android:textSize="@dimen/font_h2"/>
             </RelativeLayout>
             <RelativeLayout
@@ -152,14 +223,24 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 >
-                <TextView
+                <!--<TextView
                     android:id="@+id/register_to_set"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@drawable/textcolor_selector"
                     android:layout_centerInParent="true"
                     android:text="Set the Server/Port"
+                    android:textSize="@dimen/font_h3"/>-->
+                <!--pang_fix_20190617-->
+                <TextView
+                    android:id="@+id/register_to_set"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@drawable/textcolor_selector"
+                    android:layout_centerInParent="true"
+                    android:text="设置服务器地址/端口号"
                     android:textSize="@dimen/font_h3"/>
+
             </RelativeLayout>
         </LinearLayout>
     </RelativeLayout>
