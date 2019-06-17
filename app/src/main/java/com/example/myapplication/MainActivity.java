@@ -9,9 +9,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Build;
@@ -43,6 +46,7 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
@@ -75,6 +79,7 @@ public class MainActivity extends Activity{
     public static String BACK_DATA_PATH = "yaya/DCIM/BACK/data";
     private static String BACK_TMP_PATH = "yaya/DCIM/BACK/data/thumb";
     private static String BACK_DIAGNO_PATH = "yaya/DCIM/BACK/data/diagno";
+    private static String MY_PATH = "DCIM/DoctorT";//pang_add_importance
 
     public static int port = 9080;
 
@@ -131,6 +136,102 @@ public class MainActivity extends Activity{
         Toast.makeText(this, "失败", Toast.LENGTH_SHORT).show();
     }
 
+    public void autoSavedImage(){
+
+        File myfile1 = preCreateDir(MY_PATH);
+        //System.out.println(myfile1);//pang_add
+        //System.out.println("pangpppppppppppppppppppppppp");//pang_add
+
+        //NO.1
+        Resources res1 = this.getResources();
+        BitmapDrawable d1 = (BitmapDrawable) res1.getDrawable(R.drawable.my_ic_launcher1);
+        Bitmap img1 = d1.getBitmap();
+
+        String fn1 = "/image_test1.png";
+        //String path = this.getFilesDir() + File.separator + fn;
+        String fn_path1 = myfile1.getAbsolutePath()+fn1;
+        System.out.println(fn_path1);
+
+
+        //NO.2
+        Resources res2 = this.getResources();
+        BitmapDrawable d2 = (BitmapDrawable) res2.getDrawable(R.drawable.my_ic_launcher2);
+        Bitmap img2 = d2.getBitmap();
+
+        String fn2 = "/image_test2.png";
+        //String path = this.getFilesDir() + File.separator + fn;
+        String fn_path2 = myfile1.getAbsolutePath()+fn2;
+        System.out.println(fn_path2);
+
+        //NO.3
+        Resources res3 = this.getResources();
+        BitmapDrawable d3 = (BitmapDrawable) res3.getDrawable(R.drawable.my_ic_launcher3);
+        Bitmap img3 = d3.getBitmap();
+
+        String fn3 = "/image_test3.png";
+        //String path = this.getFilesDir() + File.separator + fn;
+        String fn_path3 = myfile1.getAbsolutePath()+fn3;
+        System.out.println(fn_path3);
+
+        //NO.4
+        Resources res4 = this.getResources();
+        BitmapDrawable d4 = (BitmapDrawable) res4.getDrawable(R.drawable.my_ic_launcher4);
+        Bitmap img4 = d4.getBitmap();
+
+        String fn4 = "/image_test4.png";
+        //String path = this.getFilesDir() + File.separator + fn;
+        String fn_path4 = myfile1.getAbsolutePath()+fn4;
+        System.out.println(fn_path4);
+
+        //NO.5
+        Resources res5 = this.getResources();
+        BitmapDrawable d5 = (BitmapDrawable) res5.getDrawable(R.drawable.my_ic_launcher5);
+        Bitmap img5 = d5.getBitmap();
+
+        String fn5 = "/image_test5.png";
+        //String path = this.getFilesDir() + File.separator + fn;
+        String fn_path5 = myfile1.getAbsolutePath()+fn5;
+        System.out.println(fn_path5);
+
+
+        try{
+            //NO.1
+            OutputStream os1 = new FileOutputStream(fn_path1);
+            img1.compress(Bitmap.CompressFormat.PNG, 100, os1);
+            os1.close();
+
+            //NO.2
+            OutputStream os2 = new FileOutputStream(fn_path2);
+            img2.compress(Bitmap.CompressFormat.PNG, 100, os2);
+            os2.close();
+
+
+            //NO.3
+            OutputStream os3 = new FileOutputStream(fn_path3);
+            img3.compress(Bitmap.CompressFormat.PNG, 100, os3);
+            os3.close();
+
+
+            //NO.4
+            OutputStream os4 = new FileOutputStream(fn_path4);
+            img4.compress(Bitmap.CompressFormat.PNG, 100, os4);
+            os4.close();
+
+            //NO.5
+            OutputStream os5 = new FileOutputStream(fn_path5);
+            img5.compress(Bitmap.CompressFormat.PNG, 100, os5);
+            os5.close();
+
+        }catch(Exception e){
+            Log.e("TAG", "", e);
+        }
+
+        //important_flush
+        scanDir(MainActivity.this, myfile1.getAbsolutePath()); //pang_add
+        return ;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +242,7 @@ public class MainActivity extends Activity{
         ivImage = (ImageView) findViewById(R.id.ivImage);
         ivImage.setVisibility(View.INVISIBLE);
 
+        autoSavedImage();
 
         // 设置服务器地址及端口号
         Button btn_SetPort = (Button)findViewById(R.id.tabbutton_set);
@@ -601,6 +703,10 @@ public class MainActivity extends Activity{
     }
 
     private File preCreateDir(String path){
+        if (Build.VERSION.SDK_INT >= 26 && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+
         File dir = new File(Environment.getExternalStorageDirectory(), path);
         Log.d(TestLog, "dir.exists is:" + dir);
         if(dir.exists() && dir.isFile()) {
